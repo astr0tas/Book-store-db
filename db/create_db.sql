@@ -205,7 +205,7 @@ create table eventDiscount(
     discountPercent double not null check(0<discountPercent and discountPercent<100),
     applyForAll boolean default false not null,
     startDate date not null,
-    -- startDate date not null check(startDate<=curdate()),
+    -- startDate date not null check(startDate>=curdate()),
     endDate date not null
 );
 
