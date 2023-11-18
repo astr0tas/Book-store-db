@@ -138,7 +138,7 @@ create trigger eventDiscountInsertTrigger
 before insert on eventDiscount
 for each row
 begin
-    if new.startDate>now() then
+    if new.startDate<now() then
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Event discount start date time must not be in the past!';
     end if;
 end//
@@ -150,7 +150,7 @@ create trigger eventDiscountUpdateTrigger
 before update on eventDiscount
 for each row
 begin
-    if new.startDate>now() then
+    if new.startDate<now() then
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Event discount start date time must not be in the past!';
     end if;
 end//

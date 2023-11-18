@@ -95,7 +95,7 @@ create table rating(
     customer varchar(10) references customer(id) on delete cascade on update cascade,
     primary key(book,number,customer),
     foreign key(book,number) references edition(id,number) on delete cascade on update cascade,
-    star double not null default 0.0 check(star>=0 and star<=5)
+    star int not null default 0 check(star>=0 and star<=5)
 );
 
 create table wishlist(
@@ -179,21 +179,21 @@ create table physicalOrderContain(
 );
 
 create table discount(
-	id varchar(10) primary key
+	id varchar(20) primary key
 );
 
 create table discountApply(
 	orderID varchar(10) references customerOrder(orderID) on delete cascade on update cascade,
-    discount varchar(10) references discount(id) on delete cascade on update cascade,
+    discount varchar(20) references discount(id) on delete cascade on update cascade,
     primary key(orderID,discount)
 );
 
 create table customerDiscount(
-	discount varchar(10) primary key references discount(id) on delete cascade on update cascade
+	discount varchar(20) primary key references discount(id) on delete cascade on update cascade
 );
 
 create table customerDiscountMilestone(
-	discount varchar(10) references customerDiscount(discount) on delete cascade on update cascade,
+	discount varchar(20) references customerDiscount(discount) on delete cascade on update cascade,
     point double not null check(point>0),
     discountPercent double not null check(0<discountPercent and discountPercent<100),
     unique(point),
@@ -201,7 +201,7 @@ create table customerDiscountMilestone(
 );
 
 create table eventDiscount(
-	discount varchar(10) primary key references discount(id) on delete cascade on update cascade,
+	discount varchar(20) primary key references discount(id) on delete cascade on update cascade,
     discountPercent double not null check(0<discountPercent and discountPercent<100),
     applyForAll boolean default false not null,
     startDate date not null,
@@ -211,6 +211,6 @@ create table eventDiscount(
 
 create table eventApply(
 	book varchar(10) references book(id) on delete cascade on update cascade,
-    discount varchar(10) references eventDiscount(discount) on delete cascade on update cascade,
+    discount varchar(20) references eventDiscount(discount) on delete cascade on update cascade,
     primary key(book,discount)
 );
