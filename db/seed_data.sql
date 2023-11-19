@@ -1,5 +1,8 @@
 use bookstore;
 
+-- Important
+INSERT INTO publisher (name) VALUES("N/A");
+
 -- Inserting data into the 'category' table
 INSERT INTO category (name) VALUES
 ('Fiction'),
@@ -72,7 +75,7 @@ INSERT INTO publisher (name) VALUES
 
 -- Inserting data into the 'edition' table
 insert into edition(id,number,publisher,publishDate) values
-('BOOK1',1,'Bloomsbury ','1997-06-26'),
+('BOOK1',1,'Bloomsbury','1997-06-26'),
 ('BOOK2',1,'Bantam Spectra','1996-08-06'),
 ('BOOK3',1,'Doubleday','1977-01-28'),
 ('BOOK4',1,'Viking Penguin','2006-02-16'),
@@ -212,19 +215,19 @@ insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate
 ('E_DISCOUNT2',30,false,date_add(now(),interval 2 day),date_add(now(),interval 10 day));
 
 -- Inserting data into the 'eventApply' table
-insert into eventApply(discount,book) values -- this will need a trigger check if the discount event only apply for a limited books or not
+insert into eventApply(discount,book) values
 ('E_DISCOUNT2','BOOK1'),
 ('E_DISCOUNT2','BOOK2'),
 ('E_DISCOUNT2','BOOK5');
 
 -- Inserting data into the 'rating' table
-insert into rating(book,number,customer,star) values -- this will need a trigger check if the customer has bought the book or not
+insert into rating(book,number,customer,star) values
 ('BOOK1',1,'CUSTOMER1',4),
 ('BOOK6',1,'CUSTOMER1',5),
 ('BOOK10',1,'CUSTOMER2',3);
 
 -- Inserting data into the 'comment' table
-insert into comment(book,number,customer) values -- this will need a trigger check if the customer has bought the book or not
+insert into comment(book,number,customer) values
 ('BOOK1',1,'CUSTOMER1'),
 ('BOOK6',1,'CUSTOMER1'),
 ('BOOK10',1,'CUSTOMER2');
