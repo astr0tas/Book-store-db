@@ -199,7 +199,7 @@ insert into referrerDiscount(discount,numberOfPeople,discountPercent) values
 ('R_DISCOUNT3',10,10);
 
 -- Inserting data into the 'eventDiscount' table
-insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values -- need a procedure to delete all books applied for the event when changing it from applying for a limited number of books to all books
+insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values -- need a trigger to delete all books applied for the event when changing it from applying for a limited number of books to all books
 ('E_DISCOUNT1',20,true,date_add(now(),interval 3 day),date_add(now(),interval 10 day)),
 ('E_DISCOUNT2',30,false,date_add(now(),interval 2 day),date_add(now(),interval 10 day));
 
