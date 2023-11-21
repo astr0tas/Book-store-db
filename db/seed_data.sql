@@ -187,6 +187,9 @@ insert into discount(id) values
 ('C_DISCOUNT1'),
 ('C_DISCOUNT2'),
 ('C_DISCOUNT3'),
+('R_DISCOUNT1'),
+('R_DISCOUNT2'),
+('R_DISCOUNT3'),
 ('E_DISCOUNT1'),
 ('E_DISCOUNT2');
 
@@ -198,16 +201,16 @@ insert into discountApply(orderId,discount) values
 ('ORDER2','C_DISCOUNT3');
 
 -- Inserting data into the 'customerDiscount' table
-insert into customerDiscount(discount) values
-('C_DISCOUNT1'),
-('C_DISCOUNT2'),
-('C_DISCOUNT3');
-
--- Inserting data into the 'customerDiscountMilestone' table
-insert into customerDiscountMilestone(discount,point,discountPercent) values
+insert into customerDiscount(discount,point,discountPercent) values
 ('C_DISCOUNT1',1000,5),
 ('C_DISCOUNT2',2000,7),
 ('C_DISCOUNT3',4000,10);
+
+-- Inserting data into the 'referrerDiscount' table
+insert into referrerDiscount(discount,numberOfPeople,discountPercent) values
+('R_DISCOUNT1',5,5),
+('R_DISCOUNT2',7,7),
+('R_DISCOUNT3',10,10);
 
 -- Inserting data into the 'eventDiscount' table
 insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values

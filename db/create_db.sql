@@ -236,17 +236,17 @@ create table discountApply(
 );
 
 create table customerDiscount(
-	discount varchar(20) primary key references discount(id) on delete cascade on update cascade
+	discount varchar(20) primary key references discount(id) on delete cascade on update cascade,
+    point double unique not null check(point>0),
+    discountPercent double not null check(0<discountPercent and discountPercent<100)
     -- ,
 --     check(discount=trim(discount))
 );
 
-create table customerDiscountMilestone(
-	discount varchar(20) references customerDiscount(discount) on delete cascade on update cascade,
-    point double not null check(point>0),
-    discountPercent double not null check(0<discountPercent and discountPercent<100),
-    unique(point),
-    primary key(discount,point,discountPercent)
+create table referrerDiscount(
+	discount varchar(20) primary key references discount(id) on delete cascade on update cascade,
+    numberOfPeople int unique not null check(numberOfPeople>=1),
+    discountPercent double not null check(0<discountPercent and discountPercent<100)
     -- ,
 --     check(discount=trim(discount))
 );
