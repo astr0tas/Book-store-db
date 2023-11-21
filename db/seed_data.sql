@@ -139,20 +139,6 @@ insert into wishlist(book,number,customer) values
 ('BOOK5',1,'CUSTOMER2'),
 ('BOOK2',1,'CUSTOMER3');
 
--- Inserting data into the 'physicalCart' table
-insert into physicalCart(book,number,customer,amount) values -- this will need a trigger check for age appropriate
-('BOOK8',1,'CUSTOMER1',2),
-('BOOK6',1,'CUSTOMER1',1),
-('BOOK3',1,'CUSTOMER2',5),
-('BOOK9',1,'CUSTOMER3',10);
-
--- Inserting data into the 'fileCart' table
-insert into fileCart(book,number,customer) values -- this will need a trigger check for age appropriate
-('BOOK9',1,'CUSTOMER1'),
-('BOOK4',1,'CUSTOMER1'),
-('BOOK4',1,'CUSTOMER2'),
-('BOOK8',1,'CUSTOMER3');
-
 -- Inserting data into the 'customerOrder' table
 insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer) values
 ('ORDER1',20,'2023-11-18 15:00:00',0,'CUSTOMER1'),

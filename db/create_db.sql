@@ -131,23 +131,6 @@ create table commentContent(
     foreign key(book,number,customer) references comment(book,number,customer)
 );
 
-create table physicalCart(
-	number int,
-    book varchar(10),
-    customer varchar(10) references customer(id) on delete cascade on update cascade,
-    primary key(number,book,customer),
-    foreign key(number,book) references physicalCopy(number,book) on delete cascade on update cascade,
-    amount int not null default 1 check(amount>=1)
-);
-
-create table fileCart(
-	number int,
-    book varchar(10),
-    customer varchar(10) references customer(id) on delete cascade on update cascade,
-    primary key(number,book,customer),
-    foreign key(number,book) references fileCopy(number,book) on delete cascade on update cascade
-);
-
 create table customerOrder(
 	id varchar(10) primary key,
     totalCost double not null check(totalCost>=0),
