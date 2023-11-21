@@ -147,7 +147,7 @@ insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer) values
 ('ORDER4',100,'2023-11-18 20:01:30',50,'CUSTOMER3');
 
 -- Inserting data into the 'physicalOrder' table
-insert into physicalOrder(orderID,destinationAddress) values -- this will need a trigger check for destinationAddress is null when inserting
+insert into physicalOrder(orderID,destinationAddress) values -- this will need a trigger check for destinationAddress is null when inserting if null set to customer default address
 ('ORDER1','123 Main St, Cityville'),
 ('ORDER3','456 Oak St, Townsville');
 
@@ -199,7 +199,7 @@ insert into referrerDiscount(discount,numberOfPeople,discountPercent) values
 ('R_DISCOUNT3',10,10);
 
 -- Inserting data into the 'eventDiscount' table
-insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values
+insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values -- need a procedure to delete all books applied for the event when changing it from applying for a limited number of books to all books
 ('E_DISCOUNT1',20,true,date_add(now(),interval 3 day),date_add(now(),interval 10 day)),
 ('E_DISCOUNT2',30,false,date_add(now(),interval 2 day),date_add(now(),interval 10 day));
 

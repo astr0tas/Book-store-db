@@ -46,7 +46,8 @@ create table edition(
     number int,
     primary key(id,number),
     publisher varchar(100) not null references publisher(name) on update cascade,
-    publishDate date not null
+    publishDate date not null,
+    avgStar double default 0.0 check(avgStar>=0 and avgStar<=5)
     -- publishDate date not null check(publishDate<=curdate())
 );
 
@@ -92,7 +93,8 @@ create table customer(
     email varchar(100) unique not null,
     username varchar(20) unique not null,
     password varchar(20) not null,
-    referrer varchar(10) references customer(id) on delete set null on update cascade
+    referrer varchar(10) references customer(id) on delete set null on update cascade,
+    status boolean not null default true
 );
 
 create table rating(
@@ -137,7 +139,8 @@ create table customerOrder(
     orderTime datetime not null,
     -- orderTime datetime not null check(orderTime<=now()),
     totalDiscount double default 0 check (totalDiscount>=0),
-    customer varchar(10) not null references customer(id) on delete cascade on update cascade
+    customer varchar(10) not null references customer(id) on delete cascade on update cascade,
+    status boolean not null default false -- false mean that the customer hasn't paid yet
 );
 
 create table physicalOrder(
