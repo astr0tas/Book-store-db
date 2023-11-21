@@ -161,7 +161,7 @@ insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer) values
 ('ORDER4',100,'2023-11-18 20:01:30',50,'CUSTOMER3');
 
 -- Inserting data into the 'physicalOrder' table
-insert into physicalOrder(orderID,destinationAddress) values
+insert into physicalOrder(orderID,destinationAddress) values -- this will need a trigger check for destinationAddress is null when inserting
 ('ORDER1','123 Main St, Cityville'),
 ('ORDER3','456 Oak St, Townsville');
 
