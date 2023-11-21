@@ -180,7 +180,7 @@ create table customerOrder(
     totalCost double not null check(totalCost>=0),
     orderTime datetime not null,
     -- orderTime datetime not null check(orderTime<=now()),
-    totalDiscount double default 0 check (totalDiscount>=0 and totalDiscount<=100),
+    totalDiscount double default 0 check (totalDiscount>=0),
     customer varchar(10) not null references customer(id) on delete cascade on update cascade
     -- ,
 --     check(customer=trim(customer))
