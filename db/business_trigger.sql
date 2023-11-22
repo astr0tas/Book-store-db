@@ -17,7 +17,6 @@ delimiter ;
 -- SET SQL_SAFE_UPDATES = 1;
 
 -- check whether the customer has bought the product or not in order to rate it
-
 drop trigger if exists ratingInsertTrigger;
 delimiter //
 create trigger ratingInsertTrigger
@@ -78,7 +77,6 @@ delimiter ;
 -- update rating set book='BOOK10' where book='BOOK1' and customer='CUSTOMER1';
 
 -- check whether the customer has bought the product or not in order to write comments about it
-
 drop trigger if exists commentInsertTrigger;
 delimiter //
 create trigger commentInsertTrigger
@@ -139,7 +137,6 @@ delimiter ;
 -- update comment set book='BOOK10' where book='BOOK1' and customer='CUSTOMER1';
 
 -- check whether the event in `eventApply` is set to discount a limited number of books or not before the insertion
-
 drop trigger if exists eventApplyInsertTrigger;
 delimiter //
 create trigger eventApplyInsertTrigger
@@ -156,7 +153,6 @@ end//
 delimiter ;
 
 -- admin can only update the books that are applied for the discount event, not the other way around
-
 drop trigger if exists eventApplyUpdateTrigger;
 delimiter //
 create trigger eventApplyUpdateTrigger
@@ -171,3 +167,66 @@ delimiter ;
 
 -- insert into eventApply(discount,book) values ('E_DISCOUNT1','BOOK1');
 -- update eventApply set discount='E_DISCOUNT1' where discount='E_DISCOUNT2' and book='BOOK1';
+
+-- if `applyForAll` of `eventDiscount` is set to true, delete all relevant rows in `eventApply`
+drop trigger if exists eventDiscountUpdateTrigger;
+delimiter //
+create trigger eventDiscountUpdateTrigger
+before update on eventDiscount
+for each row
+begin
+    if new.applyForAll then
+		delete from eventApply where discount=new.discount;
+    end if;
+end//
+delimiter ;
+
+-- SET SQL_SAFE_UPDATES = 0;
+-- update eventDiscount set applyForAll=true where discount='E_DISCOUNT2';
+-- select * from eventApply;
+-- SET SQL_SAFE_UPDATES = 1;
+
+-- if `destinationAddress` in `physicalOrder`is null, get the customer default address, if that also null, return error
+drop trigger if exists physicalOrderInsertTrigger;
+delimiter //
+create trigger physicalOrderInsertTrigger
+before insert on physicalOrder
+for each row
+begin
+	declare address text default null;
+
+    if new.destinationAddress is null then
+		select customer.address into address from customer join customerOrder on customerOrder.customer=customer.id where customerOrder.id=new.orderID;
+        if address is null then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer did not provide destination address nor fill in the `address` field in the profile!';
+		else
+			set new.destinationAddress:=address;
+        end if;
+    end if;
+end//
+delimiter ;
+
+-- insert into physicalOrder(orderID,destinationAddress) values('ORDER1',null);
+-- select * from physicalOrder;
+
+drop trigger if exists physicalOrderUpdateTrigger;
+delimiter //
+create trigger physicalOrderUpdateTrigger
+before update on physicalOrder
+for each row
+begin
+	declare address text default null;
+
+    if new.destinationAddress is null then
+		select customer.address into address from customer join customerOrder on customerOrder.customer=customer.id join physicalOrder on physicalOrder.orderID=customerOrder.id where physicalOrder.orderID=new.orderID;
+        if address is null then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer did not provide destination address nor fill in the `address` field in the profile!';
+		else
+			set new.destinationAddress:=address;
+        end if;
+    end if;
+end//
+delimiter ;
+
+-- update physicalOrder set destinationAddress=null where orderID='ORDER3';
+-- select * from physicalOrder;
