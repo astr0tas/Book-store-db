@@ -1,12 +1,15 @@
+-- Change the database context
 USE dbname;
-GO
 
-CREATE PROCEDURE GetTop5BestSellers
-    @StartDate DATE,
-    @EndDate DATE
-AS
+-- Delimiter change to handle the 'GO' keyword
+DELIMITER //
+
+CREATE PROCEDURE GetTop5BestSellers (
+    IN p_StartDate DATE,
+    IN p_EndDate DATE
+)
 BEGIN
-    SELECT TOP 5
+    SELECT
         b.name AS BookName,
         SUM(oc.amount) AS TotalSold
     FROM
@@ -18,13 +21,16 @@ BEGIN
     JOIN
         book b ON e.id = b.id
     WHERE
-        co.orderTime BETWEEN @StartDate AND @EndDate
+        co.orderTime BETWEEN p_StartDate AND p_EndDate
     GROUP BY
         b.name
     ORDER BY
-        TotalSold DESC;
-END;
-GO
-----------------------------------
-USE dbname;
-EXEC GetTop5BestSellers '2023-01-01', '2023-12-31';
+        TotalSold DESC
+    LIMIT 5;
+END //
+
+-- Reset the delimiter
+DELIMITER ;
+
+-- Execute the stored procedure
+CALL GetTop5BestSellers('2023-01-01', '2023-12-31');
