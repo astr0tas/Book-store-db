@@ -1,5 +1,5 @@
 -- Change the database context
-USE dbname;
+USE bookstore;
 
 -- Delimiter change to handle the 'GO' keyword
 DELIMITER //
@@ -22,6 +22,7 @@ BEGIN
         book b ON e.id = b.id
     WHERE
         co.orderTime BETWEEN p_StartDate AND p_EndDate
+        AND co.status = 1 -- Add this condition to filter orders with status = 1
     GROUP BY
         b.name
     ORDER BY
