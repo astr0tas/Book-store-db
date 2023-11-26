@@ -129,8 +129,13 @@ insert into fileCopy (book,number,filePath) values
 INSERT INTO customer (id, name, dob, address, phone, cardNumber, point, email, username, password, referrer) VALUES
 ('CUSTOMER1', 'John Doe', '1990-05-15', '123 Main St, Cityville', '1234567890', '123456789012345', 100, 'john.doe@email.com', 'john_doe', 'password123', NULL),
 ('CUSTOMER2', 'Jane Smith', '1985-08-22', '456 Oak St, Townsville', '9876543210', '987654321098765', 50, 'jane.smith@email.com', 'jane_smith', 'securePW567', 'CUSTOMER1'),
-('CUSTOMER3', 'Bob Johnson', '1978-12-10', '789 Pine St, Villagetown', '5551112222', '111122223333444', 75, 'bob.johnson@email.com', 'bob_j', 'pass123word', 'CUSTOMER2');
-
+('CUSTOMER3', 'Bob Johnson', '1978-12-10', '789 Pine St, Villagetown', '5551112222', '111122223333444', 75, 'bob.johnson@email.com', 'bob_j', 'pass123word', 'CUSTOMER2'),
+('CUSTOMER4', 'John Delf', '1990-05-15', '123 Main St, Cityville', '1112223331', '123456789012345', 100, 'john.doesdssd@email.com', 'john_doedsdffgd', 'password123', NULL),
+('CUSTOMER5', 'Mr Vu', '1985-08-22', '456 Oak St, Townsville', '1112223332', '987654321098765', 50, 'jane.smith12@email.com', 'jane_smithxvfdsdf', 'securePW567', NULL),
+('CUSTOMER6', 'Bob A', '1978-12-10', '789 Pine St, Villagetown', '1112223333', '111122223333444', 75, 'bob.johnson5@email.com', 'bob_j11sdf2', 'pass123word', NULL),
+('CUSTOMER7', 'Bob B', '1978-12-10', '789 Pine St, Villagetown', '1112223334', '111122223333444', 75, 'bob.johnson6@email.com', 'bob_j123vcx', 'pass123word', NULL),
+('CUSTOMER8', 'Bob C', '1978-12-10', '789 Pine St, Villagetown', '1112223335', '111122223333444', 75, 'bob.johnso7n@email.com', 'bob_j2xcv34', 'pass123word', NULL),
+('CUSTOMER9', 'Bob D', '1978-12-10', '789 Pine St, Villagetown', '1112223336', '111122223333444', 75, 'bob.johns545on@email.com', 'bob_j23442sdf3', 'pass123word', NULL);
 -- Inserting data into the 'wishlist' table
 insert into wishlist(book,number,customer) values
 ('BOOK10',1,'CUSTOMER1'),
@@ -144,20 +149,53 @@ insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer) values
 ('ORDER1',20,'2023-11-18 15:00:00',0,'CUSTOMER1'),
 ('ORDER2',30,'2023-11-18 15:01:30',0,'CUSTOMER1'),
 ('ORDER3',50,'2023-11-18 18:01:30',20,'CUSTOMER2'),
-('ORDER4',100,'2023-11-18 20:01:30',50,'CUSTOMER3');
-('ORDER81',100,'2023-08-19 18:01:30',15,'CUSTOMER81'),
-('ORDER82',200,'2023-08-19 18:01:30',30,'CUSTOMER82'),
-('ORDER83',300,'2023-08-20 18:01:30',45,'CUSTOMER83'),
-('ORDER84',100,'2023-08-25 18:01:30',15,'CUSTOMER84'),
-('ORDER85',100,'2023-08-21 18:01:30',15,'CUSTOMER85'),
-('ORDER86',100,'2023-08-22 18:01:30',15,'CUSTOMER86'),
-('ORDER87',100,'2023-08-23 18:01:30',15,'CUSTOMER87'),
-('ORDER91',100,'2023-09-07 18:01:30',25,'CUSTOMER91'),
-('ORDER92',200,'2023-09-08 18:01:30',50,'CUSTOMER92'),
-('ORDER93',300,'2023-09-08 18:01:30',75,'CUSTOMER93'),
-('ORDER94',100,'2023-09-10 18:01:30',25,'CUSTOMER94'),
+('ORDER4',100,'2023-11-18 20:01:30',50,'CUSTOMER3'),
+-- Inserting data into the 'E_DISCOUNT4' table from 18-08-2023 28-08-2023
+('ORDER41',100,'2023-08-19 18:01:30',15,'CUSTOMER3'),
+('ORDER42',200,'2023-08-19 18:01:30',30,'CUSTOMER4'),
+('ORDER43',300,'2023-08-20 18:01:30',45,'CUSTOMER5'),
+('ORDER44',100,'2023-08-25 18:01:30',15,'CUSTOMER1'),
+('ORDER45',100,'2023-08-21 18:01:30',15,'CUSTOMER1'),
+('ORDER46',100,'2023-08-22 18:01:30',15,'CUSTOMER2'),
+('ORDER47',100,'2023-08-23 18:01:30',15,'CUSTOMER4'),
+-- Inserting data into the 'E_DISCOUNT5' table from 07-09-2023 17-08-2023
+('ORDER51',100,'2023-09-07 18:01:30',25,'CUSTOMER3'),
+('ORDER52',200,'2023-09-08 18:01:30',50,'CUSTOMER5'),
+('ORDE53',300,'2023-09-08 18:01:30',75,'CUSTOMER8'),
+('ORDER54',100,'2023-09-10 18:01:30',25,'CUSTOMER9'),
+-- Inserting data into the 'E_DISCOUNT6' table from 27-09-2023 07-10-2023
+('ORDER61',100,'2023-09-28 18:01:30',15,'CUSTOMER3'),
+('ORDER62',200,'2023-09-29 18:01:30',30,'CUSTOMER4'),
+('ORDER63',300,'2023-10-01 18:01:30',45,'CUSTOMER5'),
+('ORDER64',100,'2023-10-01 18:01:30',15,'CUSTOMER6'),
+('ORDER65',100,'2023-10-02 18:01:30',15,'CUSTOMER1'),
+('ORDER66',100,'2023-10-03 18:01:30',15,'CUSTOMER2'),
+('ORDER67',100,'2023-10-04 18:01:30',15,'CUSTOMER1'),
+('ORDER68',100,'2023-10-05 18:01:30',15,'CUSTOMER7'),
+('ORDER69',100,'2023-10-06 18:01:30',15,'CUSTOMER8'),
+-- Inserting data into the 'E_DISCOUNT7' table from 17-10-2023 27-10-2023
+('ORDER71',100,'2023-10-18 18:01:30',15,'CUSTOMER3'),
+('ORDER72',200,'2023-10-20 18:01:30',30,'CUSTOMER4'),
+('ORDER73',300,'2023-10-21 18:01:30',45,'CUSTOMER5'),
+('ORDER74',100,'2023-10-22 18:01:30',15,'CUSTOMER6'),
+('ORDER75',100,'2023-10-25 18:01:30',15,'CUSTOMER1'),
 
 
+-- Inserting data into the 'E_DISCOUNT8' table from 06-11-2023 16-11-2023
+('ORDER81',100,'2023-11-07 18:01:30',15,'CUSTOMER3'),
+('ORDER82',200,'2023-11-10 18:01:30',30,'CUSTOMER4'),
+
+-- Inserting data into the 'E_DISCOUNT9' table from 17-11-2023 25-11-2023
+('ORDER91',100,'2023-11-18 18:01:30',30,'CUSTOMER1'),
+('ORDER92',200,'2023-11-18 18:01:30',30,'CUSTOMER2'),
+('ORDER93',300,'2023-11-18 18:01:30',30,'CUSTOMER3'),
+('ORDER94',100,'2023-11-18 18:01:30',30,'CUSTOMER4'),
+('ORDER95',100,'2023-11-18 18:01:30',30,'CUSTOMER5'),
+('ORDER96',100,'2023-11-20 18:01:30',30,'CUSTOMER1'),
+('ORDER97',200,'2023-11-20 18:01:30',30,'CUSTOMER2'),
+('ORDER98',300,'2023-11-20 18:01:30',45,'CUSTOMER3'),
+('ORDER99',100,'2023-11-20 18:01:30',30,'CUSTOMER4'),
+('ORDER100',100,'2023-11-20 18:01:30',30,'CUSTOMER5');
 -- Inserting data into the 'physicalOrder' table
 insert into physicalOrder(orderID,destinationAddress) values
 ('ORDER1','123 Main St, Cityville'),
@@ -214,12 +252,12 @@ insert into referrerDiscount(discount,numberOfPeople,discountPercent) values
 insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values
 ('E_DISCOUNT1',20,true,date_add(now(),interval 3 day),date_add(now(),interval 10 day)),
 ('E_DISCOUNT2',30,false,date_add(now(),interval 2 day),date_add(now(),interval 10 day)),
-('E_DISCOUNT5', 15, true, DATE_SUB(NOW(), INTERVAL 100 DAY), DATE_SUB(NOW(), INTERVAL 90 DAY)),
-('E_DISCOUNT6', 25, false, DATE_SUB(NOW(), INTERVAL 80 DAY), DATE_SUB(NOW(), INTERVAL 70 DAY));
-
-
-
-
+('E_DISCOUNT4', 15, true, DATE_SUB(NOW(), INTERVAL 100 DAY), DATE_SUB(NOW(), INTERVAL 90 DAY)),
+('E_DISCOUNT5', 25, false, DATE_SUB(NOW(), INTERVAL 80 DAY), DATE_SUB(NOW(), INTERVAL 70 DAY)),
+('E_DISCOUNT6', 15, true, DATE_SUB(NOW(), INTERVAL 60 DAY), DATE_SUB(NOW(), INTERVAL 50 DAY)),
+('E_DISCOUNT7', 25, false, DATE_SUB(NOW(), INTERVAL 40 DAY), DATE_SUB(NOW(), INTERVAL 30 DAY)),
+('E_DISCOUNT8', 25, false, DATE_SUB(NOW(), INTERVAL 20 DAY), DATE_SUB(NOW(), INTERVAL 10 DAY)),
+('E_DISCOUNT9', 30, false, DATE_SUB(NOW(), INTERVAL 9 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY));
 -- Inserting data into the 'eventApply' table
 insert into eventApply(discount,book) values
 ('E_DISCOUNT2','BOOK1'),
