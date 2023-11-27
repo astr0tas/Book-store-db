@@ -1,5 +1,15 @@
 USE bookstore;
 DELIMITER //
+CREATE PROCEDURE sleep_for_seconds(IN seconds INT)
+BEGIN
+    DECLARE counter INT DEFAULT 0;
+
+    WHILE counter < seconds DO
+        SET counter = counter + 1;
+    END WHILE;
+END //
+DELIMITER ;
+DELIMITER //
 
 CREATE PROCEDURE reverify_order(IN order_id VARCHAR(10))
 BEGIN
@@ -21,7 +31,7 @@ BEGIN
         'Previous Total Cost:', previous_total_cost,
         'Previous Total Discount:', previous_total_discount,
         'Customer ID:', customer_id;
-
+ CALL sleep_for_seconds(2);
     -- Restore customer points to the previous value
     UPDATE customer
     SET point = previous_points
@@ -31,15 +41,18 @@ BEGIN
     UPDATE customerOrder
     SET totalCost = 0, totalDiscount = 0
     WHERE id = order_id;
-
+ CALL sleep_for_seconds(2);
     -- Print the updated points after the restoration
     SELECT 'Updated Points:', (SELECT point FROM customer WHERE id = customer_id) AS updated_points;
-
+ CALL sleep_for_seconds(2);
     -- Call other procedures to recalculate values
     CALL calculate_total_cost(order_id);
     CALL calculate_total_discount(order_id);
     CALL calculate_customer_points(order_id);
-    
+     SELECT 'Total Cost After Recalculation:', totalCost, 'Total Discount After Recalculation:', totalDiscount
+    FROM customerOrder
+    WHERE id = order_id;
+
     -- Print a message to indicate the completion of the procedure
     SELECT 'Reverification completed successfully.' AS Message;
 END //
@@ -49,12 +62,15 @@ DELIMITER ;
 
 DELIMITER //
 
+-- ...
+
+DELIMITER //
 CREATE PROCEDURE calculate_total_cost(IN order_id VARCHAR(10))
 BEGIN
     DECLARE total_cost DOUBLE;
 
     -- Calculate total cost based on product values with status 0
-    SELECT COALESCE(SUM(book.price), 0)
+    SELECT COALESCE(SUM(book.price * physicalOrderContain.amount), 0)
     INTO total_cost
     FROM physicalOrderContain
     JOIN edition ON physicalOrderContain.number = edition.number AND physicalOrderContain.book = edition.id
@@ -68,6 +84,7 @@ BEGIN
 END //
 
 DELIMITER ;
+
 DELIMITER //
 
 CREATE PROCEDURE calculate_total_discount(IN order_id VARCHAR(10))
@@ -113,7 +130,7 @@ BEGIN
     UPDATE customerOrder
     SET totalDiscount = total_cost * (@max_discount_percentage / 100)
     WHERE id = order_id;
-
+SELECT 'Total Discount After Update:', totalDiscount FROM customerOrder WHERE id = order_id;
     -- Apply customer points calculation after discount
     CALL calculate_customer_points(order_id);
 END //
@@ -138,5 +155,4 @@ BEGIN
 END //
 
 DELIMITER ;
----------------------
-CALL reverify_order('ORDER1');
+
