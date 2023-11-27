@@ -1,4 +1,5 @@
 USE bookstore;
+
 DELIMITER //
 
 CREATE PROCEDURE updateCustomerDataBatch()
@@ -42,37 +43,51 @@ BEGIN
 
         -- Check if the date of birth is valid
         IF newDOB > CURRENT_DATE THEN
+            DELETE FROM customer WHERE id = customerID;
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid date of birth';
+            ITERATE customerLoop;
         END IF;
 
         -- Check if the phone number format is valid (example: 0987654321)
         IF LENGTH(newPhone) <> 10 OR NOT newPhone REGEXP '^[0-9]+$' THEN
+            DELETE FROM customer WHERE id = customerID;
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid phone number format';
+            ITERATE customerLoop;
         END IF;
 
         -- Check if the email format is valid
         IF NOT newEmail REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' THEN
+            DELETE FROM customer WHERE id = customerID;
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid email format';
+            ITERATE customerLoop;
         END IF;
 
         -- Check if the referrer exists and is not the same as the customer being updated
         IF newReferrer IS NOT NULL AND NOT EXISTS (SELECT * FROM customer WHERE id = newReferrer) THEN
+            DELETE FROM customer WHERE id = customerID;
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid referrer';
+            ITERATE customerLoop;
         END IF;
 
         -- Check if the username is unique
         IF EXISTS (SELECT * FROM customer WHERE username = newUsername AND id <> customerID) THEN
+            DELETE FROM customer WHERE id = customerID;
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username must be unique';
+            ITERATE customerLoop;
         END IF;
 
         -- Check if the email is unique
         IF EXISTS (SELECT * FROM customer WHERE email = newEmail AND id <> customerID) THEN
+            DELETE FROM customer WHERE id = customerID;
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email must be unique';
+            ITERATE customerLoop;
         END IF;
 
         -- Check if the cardNumber is unique
         IF EXISTS (SELECT * FROM customer WHERE cardNumber = newCardNumber AND id <> customerID) THEN
+            DELETE FROM customer WHERE id = customerID;
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Card Number must be unique';
+            ITERATE customerLoop;
         END IF;
 
         -- Your additional validation checks go here for each field...
@@ -98,3 +113,28 @@ BEGIN
 END //
 
 DELIMITER ;
+DELIMITER //
+
+CREATE PROCEDURE updateCustomerDataLoop()
+BEGIN
+    DECLARE isError BOOLEAN;
+
+    -- Declare a handler to catch exceptions
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET isError = TRUE;
+
+    -- Loop until there are no errors
+    REPEAT
+        -- Set isError to FALSE before calling the updateCustomerDataBatch procedure
+        SET isError = FALSE;
+
+        -- Call the updateCustomerDataBatch procedure
+        CALL updateCustomerDataBatch();
+
+    UNTIL NOT isError END REPEAT;
+END //
+
+DELIMITER ;
+-----------------
+run the proce
+USE bookstore;
+CALL updateCustomerDataLoop();
