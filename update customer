@@ -1,158 +1,100 @@
 USE bookstore;
 DELIMITER //
-CREATE PROCEDURE sleep_for_seconds(IN seconds INT)
+
+CREATE PROCEDURE updateCustomerDataBatch()
 BEGIN
-    DECLARE counter INT DEFAULT 0;
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE customerID VARCHAR(10);
 
-    WHILE counter < seconds DO
-        SET counter = counter + 1;
-    END WHILE;
-END //
-DELIMITER ;
-DELIMITER //
+    -- Declare variables to store customer data outside of the block
+    DECLARE newName VARCHAR(100);
+    DECLARE newDOB DATE;
+    DECLARE newAddress TEXT;
+    DECLARE newPhone VARCHAR(10);
+    DECLARE newCardNumber VARCHAR(15);
+    DECLARE newPoint INT;
+    DECLARE newEmail VARCHAR(100);
+    DECLARE newUsername VARCHAR(20);
+    DECLARE newPassword VARCHAR(20);
+    DECLARE newReferrer VARCHAR(10);
+    DECLARE newStatus BOOLEAN;
 
-CREATE PROCEDURE reverify_order(IN order_id VARCHAR(10))
-BEGIN
-    DECLARE previous_points INT;
-    DECLARE previous_total_cost DOUBLE;
-    DECLARE previous_total_discount DOUBLE;
-    DECLARE customer_id VARCHAR(10);
+    -- Declare cursors for iterating over customers
+    DECLARE customerCursor CURSOR FOR SELECT id FROM customer;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-    -- Retrieve previous values from the customerOrder table
-    SELECT c.point, co.totalCost, co.totalDiscount, co.customer
-    INTO previous_points, previous_total_cost, previous_total_discount, customer_id
-    FROM customerOrder co
-    JOIN customer c ON co.customer = c.id
-    WHERE co.id = order_id;
+    OPEN customerCursor;
 
-    -- Print the retrieved values (for debugging purposes)
-    SELECT 
-        'Previous Points:', previous_points,
-        'Previous Total Cost:', previous_total_cost,
-        'Previous Total Discount:', previous_total_discount,
-        'Customer ID:', customer_id;
- CALL sleep_for_seconds(2);
-    -- Restore customer points to the previous value
-    UPDATE customer
-    SET point = previous_points
-    WHERE id = customer_id;
+    customerLoop: LOOP
+        FETCH customerCursor INTO customerID;
+        IF done THEN
+            LEAVE customerLoop;
+        END IF;
 
-    -- Reset totalCost and totalDiscount to 0
-    UPDATE customerOrder
-    SET totalCost = 0, totalDiscount = 0
-    WHERE id = order_id;
- CALL sleep_for_seconds(2);
-    -- Print the updated points after the restoration
-    SELECT 'Updated Points:', (SELECT point FROM customer WHERE id = customer_id) AS updated_points;
- CALL sleep_for_seconds(2);
-    -- Call other procedures to recalculate values
-    CALL calculate_total_cost(order_id);
-    CALL calculate_total_discount(order_id);
-    CALL calculate_customer_points(order_id);
-     SELECT 'Total Cost After Recalculation:', totalCost, 'Total Discount After Recalculation:', totalDiscount
-    FROM customerOrder
-    WHERE id = order_id;
+        -- Fetch customer data for the current customer
+        SELECT
+            name, dob, address, phone, cardNumber,
+            point, email, username, password, referrer, status
+        INTO
+            newName, newDOB, newAddress, newPhone, newCardNumber,
+            newPoint, newEmail, newUsername, newPassword, newReferrer, newStatus
+        FROM customer WHERE id = customerID;
 
-    -- Print a message to indicate the completion of the procedure
-    SELECT 'Reverification completed successfully.' AS Message;
-END //
+        -- Check if the date of birth is valid
+        IF newDOB > CURRENT_DATE THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid date of birth';
+        END IF;
 
-DELIMITER ;
+        -- Check if the phone number format is valid (example: 0987654321)
+        IF LENGTH(newPhone) <> 10 OR NOT newPhone REGEXP '^[0-9]+$' THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid phone number format';
+        END IF;
 
+        -- Check if the email format is valid
+        IF NOT newEmail REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid email format';
+        END IF;
 
-DELIMITER //
+        -- Check if the referrer exists and is not the same as the customer being updated
+        IF newReferrer IS NOT NULL AND NOT EXISTS (SELECT * FROM customer WHERE id = newReferrer) THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid referrer';
+        END IF;
 
--- ...
+        -- Check if the username is unique
+        IF EXISTS (SELECT * FROM customer WHERE username = newUsername AND id <> customerID) THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username must be unique';
+        END IF;
 
-DELIMITER //
-CREATE PROCEDURE calculate_total_cost(IN order_id VARCHAR(10))
-BEGIN
-    DECLARE total_cost DOUBLE;
+        -- Check if the email is unique
+        IF EXISTS (SELECT * FROM customer WHERE email = newEmail AND id <> customerID) THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email must be unique';
+        END IF;
 
-    -- Calculate total cost based on product values with status 0
-    SELECT COALESCE(SUM(book.price * physicalOrderContain.amount), 0)
-    INTO total_cost
-    FROM physicalOrderContain
-    JOIN edition ON physicalOrderContain.number = edition.number AND physicalOrderContain.book = edition.id
-    JOIN book ON edition.id = book.id
-    WHERE physicalOrderContain.orderID = order_id;
+        -- Check if the cardNumber is unique
+        IF EXISTS (SELECT * FROM customer WHERE cardNumber = newCardNumber AND id <> customerID) THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Card Number must be unique';
+        END IF;
 
-    -- Update customerOrder table with the calculated total cost
-    UPDATE customerOrder
-    SET totalCost = total_cost
-    WHERE id = order_id;
-END //
+        -- Your additional validation checks go here for each field...
 
-DELIMITER ;
+        -- Update customer data if all checks pass
+        UPDATE customer
+        SET
+            name = newName,
+            dob = newDOB,
+            address = newAddress,
+            phone = newPhone,
+            cardNumber = newCardNumber,
+            point = newPoint,
+            email = newEmail,
+            username = newUsername,
+            password = newPassword,
+            referrer = newReferrer,
+            status = newStatus
+        WHERE id = customerID;
+    END LOOP;
 
-DELIMITER //
-
-CREATE PROCEDURE calculate_total_discount(IN order_id VARCHAR(10))
-BEGIN
-    DECLARE total_cost DOUBLE;
-    DECLARE event_discount_percentage DOUBLE;
-    DECLARE customer_discount_percentage DOUBLE;
-    DECLARE referrer_discount_percentage DOUBLE;
-
-    -- Calculate total cost based on product values with status 0
-    SELECT COALESCE(SUM(book.price), 0)
-    INTO total_cost
-    FROM physicalOrderContain
-    JOIN edition ON physicalOrderContain.number = edition.number AND physicalOrderContain.book = edition.id
-    JOIN book ON edition.id = book.id
-    WHERE physicalOrderContain.orderID = order_id;
-
-    -- Calculate event discount
-    SELECT discountPercent
-    INTO event_discount_percentage
-    FROM eventDiscount
-    WHERE startDate <= CURDATE() AND endDate >= CURDATE() AND applyForAll = TRUE;
-
-    -- Calculate customer discount
-    SELECT point
-    INTO customer_discount_percentage
-    FROM customerDiscount
-    WHERE point <= (SELECT point FROM customerOrder WHERE id = order_id)
-    ORDER BY point DESC
-    LIMIT 1;
-
-    -- Calculate referrer discount
-    SELECT COALESCE(SUM(referrer_discount_percentage), 0)
-    INTO referrer_discount_percentage
-    FROM customer AS c1
-    JOIN customer AS c2 ON c1.referrer = c2.id
-    WHERE c1.id = (SELECT customer FROM customerOrder WHERE id = order_id);
-
-    -- Apply the maximum discount percentage
-    SET @max_discount_percentage = GREATEST(event_discount_percentage, customer_discount_percentage, referrer_discount_percentage);
-
-    -- Calculate the total discount and update customerOrder table
-    UPDATE customerOrder
-    SET totalDiscount = total_cost * (@max_discount_percentage / 100)
-    WHERE id = order_id;
-SELECT 'Total Discount After Update:', totalDiscount FROM customerOrder WHERE id = order_id;
-    -- Apply customer points calculation after discount
-    CALL calculate_customer_points(order_id);
+    CLOSE customerCursor;
 END //
 
 DELIMITER ;
-DELIMITER //
-
-CREATE PROCEDURE calculate_customer_points(IN order_id VARCHAR(10))
-BEGIN
-    DECLARE total_cost DOUBLE;
-
-    -- Retrieve total cost after discount
-    SELECT totalCost
-    INTO total_cost
-    FROM customerOrder
-    WHERE id = order_id;
-
-    -- Calculate and update customer points
-    UPDATE customer
-    SET point = FLOOR(total_cost / 5)
-    WHERE id = (SELECT customer FROM customerOrder WHERE id = order_id);
-END //
-
-DELIMITER ;
-
