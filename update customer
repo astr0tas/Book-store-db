@@ -1,140 +1,74 @@
 USE bookstore;
-
 DELIMITER //
 
-CREATE PROCEDURE updateCustomerDataBatch()
+CREATE PROCEDURE update_customer(
+    IN p_id VARCHAR(10),
+    IN p_name VARCHAR(100),
+    IN p_dob DATE,
+    IN p_address TEXT,
+    IN p_phone VARCHAR(10),
+    IN p_cardNumber VARCHAR(15),
+    IN p_point INT,
+    IN p_email VARCHAR(100),
+    IN p_username VARCHAR(20),
+    IN p_password VARCHAR(20),
+    IN p_referrer VARCHAR(10),
+    IN p_status BOOLEAN
+)
 BEGIN
-    DECLARE done INT DEFAULT FALSE;
-    DECLARE customerID VARCHAR(10);
+    DECLARE error_message VARCHAR(255);
 
-    -- Declare variables to store customer data outside of the block
-    DECLARE newName VARCHAR(100);
-    DECLARE newDOB DATE;
-    DECLARE newAddress TEXT;
-    DECLARE newPhone VARCHAR(10);
-    DECLARE newCardNumber VARCHAR(15);
-    DECLARE newPoint INT;
-    DECLARE newEmail VARCHAR(100);
-    DECLARE newUsername VARCHAR(20);
-    DECLARE newPassword VARCHAR(20);
-    DECLARE newReferrer VARCHAR(10);
-    DECLARE newStatus BOOLEAN;
+    -- Kiểm tra số điện thoại hợp lệ (số Việt Nam)
+    IF LENGTH(p_phone) != 10 OR p_phone NOT REGEXP '^[0-9]+$' THEN
+        SET error_message = 'Số điện thoại không hợp lệ';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
+    END IF;
 
-    -- Declare cursors for iterating over customers
-    DECLARE customerCursor CURSOR FOR SELECT id FROM customer;
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    -- Kiểm tra email hợp lệ
+    IF p_email NOT REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' THEN
+        SET error_message = 'Email không hợp lệ';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
+    END IF;
 
-    OPEN customerCursor;
+    -- Kiểm tra referrer là người giới thiệu không trùng với id trong cùng 1 hàng
+    IF p_referrer IS NOT NULL AND p_referrer = p_id THEN
+        SET error_message = 'Người giới thiệu không thể trùng với ID trong cùng một hàng';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
+    END IF;
 
-    customerLoop: LOOP
-        FETCH customerCursor INTO customerID;
-        IF done THEN
-            LEAVE customerLoop;
-        END IF;
+    -- Kiểm tra referrer chỉ giới thiệu 1 khách hàng khác và 1 khách hàng chỉ có thể được giới thiệu 1 lần
+    IF p_referrer IS NOT NULL AND (SELECT COUNT(*) FROM customer WHERE referrer = p_referrer) > 0 THEN
+        SET error_message = 'Mỗi khách hàng chỉ có thể giới thiệu 1 khách hàng khác';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
+    END IF;
 
-        -- Fetch customer data for the current customer
-        SELECT
-            name, dob, address, phone, cardNumber,
-            point, email, username, password, referrer, status
-        INTO
-            newName, newDOB, newAddress, newPhone, newCardNumber,
-            newPoint, newEmail, newUsername, newPassword, newReferrer, newStatus
-        FROM customer WHERE id = customerID;
+    -- Kiểm tra referrer có thể là null
+   -- IF p_referrer IS NOT NULL AND (SELECT COUNT(*) FROM customer WHERE id = p_referrer) = 0 THEN
+   --     SET error_message = 'Người giới thiệu không tồn tại';
+  --      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
+  --  END IF;
 
-        -- Check if the date of birth is valid
-        IF newDOB > CURRENT_DATE THEN
-            DELETE FROM customer WHERE id = customerID;
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid date of birth';
-            ITERATE customerLoop;
-        END IF;
+    -- Kiểm tra không có 2 hàng nào trùng nhau
+    IF (SELECT COUNT(*) FROM customer WHERE id = p_id) > 1 THEN
+        SET error_message = 'ID không được trùng lặp';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
+    END IF;
 
-        -- Check if the phone number format is valid (example: 0987654321)
-        IF LENGTH(newPhone) <> 10 OR NOT newPhone REGEXP '^[0-9]+$' THEN
-            DELETE FROM customer WHERE id = customerID;
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid phone number format';
-            ITERATE customerLoop;
-        END IF;
-
-        -- Check if the email format is valid
-        IF NOT newEmail REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' THEN
-            DELETE FROM customer WHERE id = customerID;
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid email format';
-            ITERATE customerLoop;
-        END IF;
-
-        -- Check if the referrer exists and is not the same as the customer being updated
-        IF newReferrer IS NOT NULL AND NOT EXISTS (SELECT * FROM customer WHERE id = newReferrer) THEN
-            DELETE FROM customer WHERE id = customerID;
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid referrer';
-            ITERATE customerLoop;
-        END IF;
-
-        -- Check if the username is unique
-        IF EXISTS (SELECT * FROM customer WHERE username = newUsername AND id <> customerID) THEN
-            DELETE FROM customer WHERE id = customerID;
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username must be unique';
-            ITERATE customerLoop;
-        END IF;
-
-        -- Check if the email is unique
-        IF EXISTS (SELECT * FROM customer WHERE email = newEmail AND id <> customerID) THEN
-            DELETE FROM customer WHERE id = customerID;
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email must be unique';
-            ITERATE customerLoop;
-        END IF;
-
-        -- Check if the cardNumber is unique
-        IF EXISTS (SELECT * FROM customer WHERE cardNumber = newCardNumber AND id <> customerID) THEN
-            DELETE FROM customer WHERE id = customerID;
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Card Number must be unique';
-            ITERATE customerLoop;
-        END IF;
-
-        -- Your additional validation checks go here for each field...
-
-        -- Update customer data if all checks pass
-        UPDATE customer
-        SET
-            name = newName,
-            dob = newDOB,
-            address = newAddress,
-            phone = newPhone,
-            cardNumber = newCardNumber,
-            point = newPoint,
-            email = newEmail,
-            username = newUsername,
-            password = newPassword,
-            referrer = newReferrer,
-            status = newStatus
-        WHERE id = customerID;
-    END LOOP;
-
-    CLOSE customerCursor;
+    -- Thực hiện update
+    UPDATE customer
+    SET
+        name = p_name,
+        dob = p_dob,
+        address = p_address,
+        phone = p_phone,
+        cardNumber = p_cardNumber,
+        point = p_point,
+        email = p_email,
+        username = p_username,
+        password = p_password,
+        referrer = p_referrer,
+        status = p_status
+    WHERE id = p_id;
 END //
 
 DELIMITER ;
-DELIMITER //
-
-CREATE PROCEDURE updateCustomerDataLoop()
-BEGIN
-    DECLARE isError BOOLEAN;
-
-    -- Declare a handler to catch exceptions
-    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SET isError = TRUE;
-
-    -- Loop until there are no errors
-    REPEAT
-        -- Set isError to FALSE before calling the updateCustomerDataBatch procedure
-        SET isError = FALSE;
-
-        -- Call the updateCustomerDataBatch procedure
-        CALL updateCustomerDataBatch();
-
-    UNTIL NOT isError END REPEAT;
-END //
-
-DELIMITER ;
------------------
-run the proce
-USE bookstore;
-CALL updateCustomerDataLoop();
