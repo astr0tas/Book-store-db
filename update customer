@@ -1,74 +1,36 @@
 USE bookstore;
 DELIMITER //
 
-CREATE PROCEDURE update_customer(
-    IN p_id VARCHAR(10),
-    IN p_name VARCHAR(100),
-    IN p_dob DATE,
-    IN p_address TEXT,
-    IN p_phone VARCHAR(10),
-    IN p_cardNumber VARCHAR(15),
-    IN p_point INT,
-    IN p_email VARCHAR(100),
-    IN p_username VARCHAR(20),
-    IN p_password VARCHAR(20),
-    IN p_referrer VARCHAR(10),
-    IN p_status BOOLEAN
-)
+CREATE PROCEDURE deleteInvalidCustomers()
 BEGIN
-    DECLARE error_message VARCHAR(255);
+    -- Create a temporary table to store IDs to be deleted
+    CREATE TEMPORARY TABLE tempToDelete (idToDelete VARCHAR(10));
 
-    -- Kiểm tra số điện thoại hợp lệ (số Việt Nam)
-    IF LENGTH(p_phone) != 10 OR p_phone NOT REGEXP '^[0-9]+$' THEN
-        SET error_message = 'Số điện thoại không hợp lệ';
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
-    END IF;
+    -- Insert IDs with invalid phone numbers
+    INSERT INTO tempToDelete
+    SELECT id FROM customer WHERE LENGTH(phone) != 10 OR phone NOT REGEXP '^[0-9]+$';
 
-    -- Kiểm tra email hợp lệ
-    IF p_email NOT REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' THEN
-        SET error_message = 'Email không hợp lệ';
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
-    END IF;
+    -- Insert IDs with invalid email addresses
+    INSERT INTO tempToDelete
+    SELECT id FROM customer WHERE email NOT REGEXP '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
 
-    -- Kiểm tra referrer là người giới thiệu không trùng với id trong cùng 1 hàng
-    IF p_referrer IS NOT NULL AND p_referrer = p_id THEN
-        SET error_message = 'Người giới thiệu không thể trùng với ID trong cùng một hàng';
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
-    END IF;
+    -- Insert IDs where referrer is the same as the customer ID
+ INSERT INTO tempToDelete
+    SELECT id FROM customer WHERE id = referrer;
+INSERT INTO tempToDelete
+    SELECT id FROM customer WHERE dob > CURDATE();
+   
+INSERT INTO tempToDelete
+    SELECT id FROM customer WHERE point < 0;
+  
 
-    -- Kiểm tra referrer chỉ giới thiệu 1 khách hàng khác và 1 khách hàng chỉ có thể được giới thiệu 1 lần
-    IF p_referrer IS NOT NULL AND (SELECT COUNT(*) FROM customer WHERE referrer = p_referrer) > 0 THEN
-        SET error_message = 'Mỗi khách hàng chỉ có thể giới thiệu 1 khách hàng khác';
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
-    END IF;
+    -- Delete rows from customer table based on the temporary table
+    DELETE FROM customer WHERE id IN (SELECT idToDelete FROM tempToDelete);
 
-    -- Kiểm tra referrer có thể là null
-   -- IF p_referrer IS NOT NULL AND (SELECT COUNT(*) FROM customer WHERE id = p_referrer) = 0 THEN
-   --     SET error_message = 'Người giới thiệu không tồn tại';
-  --      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
-  --  END IF;
-
-    -- Kiểm tra không có 2 hàng nào trùng nhau
-    IF (SELECT COUNT(*) FROM customer WHERE id = p_id) > 1 THEN
-        SET error_message = 'ID không được trùng lặp';
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
-    END IF;
-
-    -- Thực hiện update
-    UPDATE customer
-    SET
-        name = p_name,
-        dob = p_dob,
-        address = p_address,
-        phone = p_phone,
-        cardNumber = p_cardNumber,
-        point = p_point,
-        email = p_email,
-        username = p_username,
-        password = p_password,
-        referrer = p_referrer,
-        status = p_status
-    WHERE id = p_id;
-END //
+    -- Drop the temporary table
+    DROP TEMPORARY TABLE IF EXISTS tempToDelete;
+END;
+//
 
 DELIMITER ;
+
