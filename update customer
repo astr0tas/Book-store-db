@@ -1,0 +1,142 @@
+USE bookstore;
+DELIMITER //
+
+CREATE PROCEDURE reverify_order(IN order_id VARCHAR(10))
+BEGIN
+    DECLARE previous_points INT;
+    DECLARE previous_total_cost DOUBLE;
+    DECLARE previous_total_discount DOUBLE;
+    DECLARE customer_id VARCHAR(10);
+
+    -- Retrieve previous values from the customerOrder table
+    SELECT c.point, co.totalCost, co.totalDiscount, co.customer
+    INTO previous_points, previous_total_cost, previous_total_discount, customer_id
+    FROM customerOrder co
+    JOIN customer c ON co.customer = c.id
+    WHERE co.id = order_id;
+
+    -- Print the retrieved values (for debugging purposes)
+    SELECT 
+        'Previous Points:', previous_points,
+        'Previous Total Cost:', previous_total_cost,
+        'Previous Total Discount:', previous_total_discount,
+        'Customer ID:', customer_id;
+
+    -- Restore customer points to the previous value
+    UPDATE customer
+    SET point = previous_points
+    WHERE id = customer_id;
+
+    -- Reset totalCost and totalDiscount to 0
+    UPDATE customerOrder
+    SET totalCost = 0, totalDiscount = 0
+    WHERE id = order_id;
+
+    -- Print the updated points after the restoration
+    SELECT 'Updated Points:', (SELECT point FROM customer WHERE id = customer_id) AS updated_points;
+
+    -- Call other procedures to recalculate values
+    CALL calculate_total_cost(order_id);
+    CALL calculate_total_discount(order_id);
+    CALL calculate_customer_points(order_id);
+    
+    -- Print a message to indicate the completion of the procedure
+    SELECT 'Reverification completed successfully.' AS Message;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE calculate_total_cost(IN order_id VARCHAR(10))
+BEGIN
+    DECLARE total_cost DOUBLE;
+
+    -- Calculate total cost based on product values with status 0
+    SELECT COALESCE(SUM(book.price), 0)
+    INTO total_cost
+    FROM physicalOrderContain
+    JOIN edition ON physicalOrderContain.number = edition.number AND physicalOrderContain.book = edition.id
+    JOIN book ON edition.id = book.id
+    WHERE physicalOrderContain.orderID = order_id;
+
+    -- Update customerOrder table with the calculated total cost
+    UPDATE customerOrder
+    SET totalCost = total_cost
+    WHERE id = order_id;
+END //
+
+DELIMITER ;
+DELIMITER //
+
+CREATE PROCEDURE calculate_total_discount(IN order_id VARCHAR(10))
+BEGIN
+    DECLARE total_cost DOUBLE;
+    DECLARE event_discount_percentage DOUBLE;
+    DECLARE customer_discount_percentage DOUBLE;
+    DECLARE referrer_discount_percentage DOUBLE;
+
+    -- Calculate total cost based on product values with status 0
+    SELECT COALESCE(SUM(book.price), 0)
+    INTO total_cost
+    FROM physicalOrderContain
+    JOIN edition ON physicalOrderContain.number = edition.number AND physicalOrderContain.book = edition.id
+    JOIN book ON edition.id = book.id
+    WHERE physicalOrderContain.orderID = order_id;
+
+    -- Calculate event discount
+    SELECT discountPercent
+    INTO event_discount_percentage
+    FROM eventDiscount
+    WHERE startDate <= CURDATE() AND endDate >= CURDATE() AND applyForAll = TRUE;
+
+    -- Calculate customer discount
+    SELECT point
+    INTO customer_discount_percentage
+    FROM customerDiscount
+    WHERE point <= (SELECT point FROM customerOrder WHERE id = order_id)
+    ORDER BY point DESC
+    LIMIT 1;
+
+    -- Calculate referrer discount
+    SELECT COALESCE(SUM(referrer_discount_percentage), 0)
+    INTO referrer_discount_percentage
+    FROM customer AS c1
+    JOIN customer AS c2 ON c1.referrer = c2.id
+    WHERE c1.id = (SELECT customer FROM customerOrder WHERE id = order_id);
+
+    -- Apply the maximum discount percentage
+    SET @max_discount_percentage = GREATEST(event_discount_percentage, customer_discount_percentage, referrer_discount_percentage);
+
+    -- Calculate the total discount and update customerOrder table
+    UPDATE customerOrder
+    SET totalDiscount = total_cost * (@max_discount_percentage / 100)
+    WHERE id = order_id;
+
+    -- Apply customer points calculation after discount
+    CALL calculate_customer_points(order_id);
+END //
+
+DELIMITER ;
+DELIMITER //
+
+CREATE PROCEDURE calculate_customer_points(IN order_id VARCHAR(10))
+BEGIN
+    DECLARE total_cost DOUBLE;
+
+    -- Retrieve total cost after discount
+    SELECT totalCost
+    INTO total_cost
+    FROM customerOrder
+    WHERE id = order_id;
+
+    -- Calculate and update customer points
+    UPDATE customer
+    SET point = FLOOR(total_cost / 5)
+    WHERE id = (SELECT customer FROM customerOrder WHERE id = order_id);
+END //
+
+DELIMITER ;
+---------------------
+CALL reverify_order('ORDER1');
