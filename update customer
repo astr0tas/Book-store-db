@@ -1,4 +1,5 @@
 USE bookstore;
+USE bookstore;
 DELIMITER //
 
 CREATE PROCEDURE deleteInvalidCustomers()
@@ -10,22 +11,47 @@ BEGIN
     INSERT INTO tempToDelete
     SELECT id FROM customer WHERE LENGTH(phone) != 10 OR phone NOT REGEXP '^[0-9]+$';
 
+    -- Print message for invalid phone numbers
+    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SELECT 'Deleting customers with invalid phone numbers...';
+    END IF;
+
     -- Insert IDs with invalid email addresses
     INSERT INTO tempToDelete
     SELECT id FROM customer WHERE email NOT REGEXP '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
 
+    -- Print message for invalid email addresses
+    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SELECT 'Deleting customers with invalid email addresses...';
+    END IF;
+
     -- Insert IDs where referrer is the same as the customer ID
- INSERT INTO tempToDelete
+    INSERT INTO tempToDelete
     SELECT id FROM customer WHERE id = referrer;
-INSERT INTO tempToDelete
+
+    -- Print message for customers with the same referrer ID
+    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SELECT 'Deleting customers with the same referrer ID...';
+    END IF;
+
+    -- Insert IDs where dob is greater than current date
+    INSERT INTO tempToDelete
     SELECT id FROM customer WHERE dob > CURDATE();
-   
-INSERT INTO tempToDelete
-    SELECT id FROM customer WHERE point < 0;
-  
+
+    -- Print message for customers with dob greater than current date
+    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SELECT 'Deleting customers with date of birth greater than current date...';
+    END IF;
 
     -- Delete rows from customer table based on the temporary table
     DELETE FROM customer WHERE id IN (SELECT idToDelete FROM tempToDelete);
+
+    -- Print overall message
+    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SELECT 'Invalid customers deleted successfully.';
+    ELSE
+        SELECT 'No invalid customers found.';
+    END IF;
 
     -- Drop the temporary table
     DROP TEMPORARY TABLE IF EXISTS tempToDelete;
@@ -33,4 +59,3 @@ END;
 //
 
 DELIMITER ;
-
