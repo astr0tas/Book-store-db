@@ -10,6 +10,7 @@ BEGIN
     DECLARE sameReferrer INT DEFAULT 0;
     DECLARE invalidDOB INT DEFAULT 0;
     -- Create a temporary table to store IDs to be deleted
+     DROP TEMPORARY TABLE IF EXISTS tempToDelete;
     CREATE TEMPORARY TABLE tempToDelete (idToDelete VARCHAR(10));
 
     -- Variables to track cases
@@ -24,7 +25,7 @@ BEGIN
         SET invalidPhone = 1;
         SELECT 'Deleting customers with invalid phone numbers...';
     END IF;
-
+DO SLEEP(2);
     -- Clear the temporary table
     TRUNCATE TABLE tempToDelete;
 
@@ -37,7 +38,7 @@ BEGIN
         SET invalidEmail = 1;
         SELECT 'Deleting customers with invalid email addresses...';
     END IF;
-
+DO SLEEP(2);
     -- Clear the temporary table
     TRUNCATE TABLE tempToDelete;
 
@@ -50,7 +51,7 @@ BEGIN
         SET sameReferrer = 1;
         SELECT 'Deleting customers with the same referrer ID...';
     END IF;
-
+DO SLEEP(2);
     -- Clear the temporary table
     TRUNCATE TABLE tempToDelete;
 
@@ -63,7 +64,7 @@ BEGIN
         SET invalidDOB = 1;
         SELECT 'Deleting customers with date of birth greater than current date...';
     END IF;
-
+DO SLEEP(2);
     -- Clear the temporary table
     TRUNCATE TABLE tempToDelete;
 
@@ -78,7 +79,7 @@ BEGIN
     END IF;
 
     -- Drop the temporary table
-    DROP TEMPORARY TABLE IF EXISTS tempToDelete;
+   
 END;
 //
 
