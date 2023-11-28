@@ -25,6 +25,25 @@ BEGIN
         AND co.status = 1 -- Add this condition to filter orders with status = 1
     GROUP BY
         b.name
+
+    UNION
+
+    SELECT
+        b.name AS BookName,
+        COUNT(oc.book) AS TotalSold
+    FROM
+        customerOrder co
+    JOIN
+        fileOrderContain oc ON co.id = oc.orderID
+    JOIN
+        edition e ON oc.book = e.id AND oc.number = e.number
+    JOIN
+        book b ON e.id = b.id
+    WHERE
+        co.orderTime BETWEEN p_StartDate AND p_EndDate
+        AND co.status = 1 -- Add this condition to filter orders with status = 1
+    GROUP BY
+        b.name
     ORDER BY
         TotalSold DESC
     LIMIT 5;
@@ -32,6 +51,4 @@ END //
 
 -- Reset the delimiter
 DELIMITER ;
-
--- Execute the stored procedure
 CALL GetTop5BestSellers('2023-01-01', '2023-12-31');
