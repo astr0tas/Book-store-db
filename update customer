@@ -1,53 +1,77 @@
 USE bookstore;
+
 USE bookstore;
 DELIMITER //
 
-CREATE PROCEDURE deleteInvalidCustomers()
+CREATE PROCEDURE updateCustomers()
 BEGIN
-    -- Create a temporary table to store IDs to be deleted.
+ DECLARE invalidPhone INT DEFAULT 0;
+    DECLARE invalidEmail INT DEFAULT 0;
+    DECLARE sameReferrer INT DEFAULT 0;
+    DECLARE invalidDOB INT DEFAULT 0;
+    -- Create a temporary table to store IDs to be deleted
     CREATE TEMPORARY TABLE tempToDelete (idToDelete VARCHAR(10));
+
+    -- Variables to track cases
+   
 
     -- Insert IDs with invalid phone numbers
     INSERT INTO tempToDelete
     SELECT id FROM customer WHERE LENGTH(phone) != 10 OR phone NOT REGEXP '^[0-9]+$';
 
-    -- Print message for invalid phone numbers
+    -- Set variable and print message for invalid phone numbers
     IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SET invalidPhone = 1;
         SELECT 'Deleting customers with invalid phone numbers...';
     END IF;
+
+    -- Clear the temporary table
+    TRUNCATE TABLE tempToDelete;
 
     -- Insert IDs with invalid email addresses
     INSERT INTO tempToDelete
     SELECT id FROM customer WHERE email NOT REGEXP '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
 
-    -- Print message for invalid email addresses
+    -- Set variable and print message for invalid email addresses
     IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SET invalidEmail = 1;
         SELECT 'Deleting customers with invalid email addresses...';
     END IF;
+
+    -- Clear the temporary table
+    TRUNCATE TABLE tempToDelete;
 
     -- Insert IDs where referrer is the same as the customer ID
     INSERT INTO tempToDelete
     SELECT id FROM customer WHERE id = referrer;
 
-    -- Print message for customers with the same referrer ID
+    -- Set variable and print message for customers with the same referrer ID
     IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SET sameReferrer = 1;
         SELECT 'Deleting customers with the same referrer ID...';
     END IF;
+
+    -- Clear the temporary table
+    TRUNCATE TABLE tempToDelete;
 
     -- Insert IDs where dob is greater than current date
     INSERT INTO tempToDelete
     SELECT id FROM customer WHERE dob > CURDATE();
 
-    -- Print message for customers with dob greater than current date
+    -- Set variable and print message for customers with dob greater than current date
     IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+        SET invalidDOB = 1;
         SELECT 'Deleting customers with date of birth greater than current date...';
     END IF;
+
+    -- Clear the temporary table
+    TRUNCATE TABLE tempToDelete;
 
     -- Delete rows from customer table based on the temporary table
     DELETE FROM customer WHERE id IN (SELECT idToDelete FROM tempToDelete);
 
     -- Print overall message
-    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
+    IF invalidPhone + invalidEmail + sameReferrer + invalidDOB > 0 THEN
         SELECT 'Invalid customers deleted successfully.';
     ELSE
         SELECT 'No invalid customers found.';
