@@ -4,7 +4,7 @@ DELIMITER //
 
 CREATE PROCEDURE deleteInvalidCustomers()
 BEGIN
-    -- Create a temporary table to store IDs to be deleted
+    -- Create a temporary table to store IDs to be deleted.
     CREATE TEMPORARY TABLE tempToDelete (idToDelete VARCHAR(10));
 
     -- Insert IDs with invalid phone numbers
