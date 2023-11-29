@@ -1,3 +1,4 @@
+-- thủ tục update sẽ kiểm tra các thuộc tính trong bảng customer ( format sđt, format email, referrer và id ko dc trùng nhau, birthdate) , nếu phát hiện hàng nào vi phạm thì xóa nó
 USE bookstore;
 
 USE bookstore;
