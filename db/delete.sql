@@ -1,6 +1,6 @@
 -- thủ tục delete sẽ kiểm tra các trang thai cua nhung khach hang neu trang thai la 0 (tuc duoc phep xoa) thi xoa no
 USE bookstore;
-
+DELIMITER //
 CREATE PROCEDURE deleteCustomers()
 BEGIN
     -- neu da xuat hien bang tam thi xoa
@@ -17,6 +17,7 @@ BEGIN
     -- xoa nhung khach hang co tai khoan khong hoat dong
     DELETE FROM customer WHERE id IN (SELECT idToDelete FROM temp_table);
 END;
-
+//
+DELIMITER ;
 ----------------------
 CALL deleteCustomers();
