@@ -17,9 +17,9 @@ delimiter ;
 -- SET SQL_SAFE_UPDATES = 1;
 
 -- check whether the customer has bought the product or not in order to rate it
-drop trigger if exists ratingInsertTrigger;
+drop trigger if exists ratingBeforeInsertTrigger;
 delimiter //
-create trigger ratingInsertTrigger
+create trigger ratingBeforeInsertTrigger
 before insert on rating
 for each row
 begin
@@ -28,7 +28,7 @@ begin
     select * from customerOrder
     join physicalOrder on physicalOrder.orderId=customerOrder.id
     join physicalOrderContain on physicalOrderContain.orderID=customerOrder.id
-    where physicalOrderContain.number=new.number and physicalOrderContain.book=new.book and customerOrder.customer=new.customer
+    where physicalOrderContain.number=new.number and physicalOrderContain.book=new.book and customerOrder.customer=new.customer and customerOrder.status=true
     ) into isFound;
     
     if not isFound then
@@ -36,7 +36,7 @@ begin
 		select * from customerOrder
 		join fileOrder on fileOrder.orderId=customerOrder.id
 		join fileOrderContain on fileOrderContain.orderID=customerOrder.id
-		where fileOrderContain.number=new.number and fileOrderContain.book=new.book and customerOrder.customer=new.customer
+		where fileOrderContain.number=new.number and fileOrderContain.book=new.book and customerOrder.customer=new.customer and customerOrder.status=true
 		) into isFound;
         if not isFound then
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer hasn\'t buy this book yet, rating is not allowed!';
@@ -45,33 +45,74 @@ begin
 end//
 delimiter ;
 
-drop trigger if exists ratingUpdateTrigger;
+drop trigger if exists ratingBeforeUpdateTrigger;
 delimiter //
-create trigger ratingUpdateTrigger
+create trigger ratingBeforeUpdateTrigger
 before update on rating
 for each row
 begin
-    declare isFound boolean default false;
-    select exists(
-    select * from customerOrder
-    join physicalOrder on physicalOrder.orderId=customerOrder.id
-    join physicalOrderContain on physicalOrderContain.orderID=customerOrder.id
-    where physicalOrderContain.number=new.number and physicalOrderContain.book=new.book and customerOrder.customer=new.customer
-    ) into isFound;
-    
-    if not isFound then
-		select exists(
-		select * from customerOrder
-		join fileOrder on fileOrder.orderId=customerOrder.id
-		join fileOrderContain on fileOrderContain.orderID=customerOrder.id
-		where fileOrderContain.number=new.number and fileOrderContain.book=new.book and customerOrder.customer=new.customer
-		) into isFound;
-        if not isFound then
-			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer hasn\'t buy this book yet, rating is not allowed!';
-        end if;
+    if new.book!=old.book or new.number!=old.number or new.customer!=old.customer then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Changing `book`, `number` or `customer` columns is not allowed, only `star` is allowed to change!';
     end if;
 end//
 delimiter ;
+
+drop trigger if exists ratingAfterInsertTrigger;
+DELIMITER //
+CREATE TRIGGER ratingAfterInsertTrigger
+AFTER insert ON rating
+FOR EACH ROW
+BEGIN
+    DECLARE total_star_Ratings double default 0;
+    DECLARE totalRatings int default 0;
+    DECLARE newAverageRating double default 0;
+
+    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE book = NEW.book AND number = NEW.number;
+    
+    IF totalRatings > 0 THEN
+		SET newAverageRating := total_star_Ratings / totalRatings;
+    END IF;
+    UPDATE edition SET avgStar = newAverageRating WHERE book = NEW.book AND number = NEW.number;
+END//
+DELIMITER ;
+
+drop trigger if exists ratingAfterUpdateTrigger;
+DELIMITER //
+CREATE TRIGGER ratingAfterUpdateTrigger
+AFTER update ON rating
+FOR EACH ROW
+BEGIN
+    DECLARE total_star_Ratings double default 0;
+    DECLARE totalRatings int default 0;
+    DECLARE newAverageRating double default 0;
+
+    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE book = NEW.book AND number = NEW.number;
+    
+    IF totalRatings > 0 THEN
+		SET newAverageRating := total_star_Ratings / totalRatings;
+    END IF;
+    UPDATE edition SET avgStar = newAverageRating WHERE book = NEW.book AND number = NEW.number;
+END//
+DELIMITER ;
+
+drop trigger if exists ratingAfterDeleteTrigger;
+DELIMITER //
+CREATE TRIGGER ratingAfterDeleteTrigger
+AFTER delete ON rating
+FOR EACH ROW
+BEGIN
+    DECLARE total_star_Ratings double default 0;
+    DECLARE totalRatings int default 0;
+    DECLARE newAverageRating double default 0;
+
+    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE book = old.book AND number = old.number;
+    
+    IF totalRatings > 0 THEN
+		SET newAverageRating := total_star_Ratings / totalRatings;
+    END IF;
+    UPDATE edition SET avgStar = newAverageRating WHERE book = old.book AND number = old.number;
+END//
+DELIMITER ;
 
 -- insert into rating(book,number,customer,star) values('BOOK10',1,'CUSTOMER1',4);
 -- update rating set book='BOOK10' where book='BOOK1' and customer='CUSTOMER1';
@@ -88,7 +129,7 @@ begin
     select * from customerOrder
     join physicalOrder on physicalOrder.orderId=customerOrder.id
     join physicalOrderContain on physicalOrderContain.orderID=customerOrder.id
-    where physicalOrderContain.number=new.number and physicalOrderContain.book=new.book and customerOrder.customer=new.customer
+    where physicalOrderContain.number=new.number and physicalOrderContain.book=new.book and customerOrder.customer=new.customer and customerOrder.status=true
     ) into isFound;
     
     if not isFound then
@@ -96,7 +137,7 @@ begin
 		select * from customerOrder
 		join fileOrder on fileOrder.orderId=customerOrder.id
 		join fileOrderContain on fileOrderContain.orderID=customerOrder.id
-		where fileOrderContain.number=new.number and fileOrderContain.book=new.book and customerOrder.customer=new.customer
+		where fileOrderContain.number=new.number and fileOrderContain.book=new.book and customerOrder.customer=new.customer and customerOrder.status=true
 		) into isFound;
         if not isFound then
 			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer hasn\'t buy this book yet, comments are not allowed!';
@@ -111,24 +152,8 @@ create trigger commentUpdateTrigger
 before update on comment
 for each row
 begin
-    declare isFound boolean default false;
-    select exists(
-    select * from customerOrder
-    join physicalOrder on physicalOrder.orderId=customerOrder.id
-    join physicalOrderContain on physicalOrderContain.orderID=customerOrder.id
-    where physicalOrderContain.number=new.number and physicalOrderContain.book=new.book and customerOrder.customer=new.customer
-    ) into isFound;
-    
-    if not isFound then
-		select exists(
-		select * from customerOrder
-		join fileOrder on fileOrder.orderId=customerOrder.id
-		join fileOrderContain on fileOrderContain.orderID=customerOrder.id
-		where fileOrderContain.number=new.number and fileOrderContain.book=new.book and customerOrder.customer=new.customer
-		) into isFound;
-        if not isFound then
-			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer hasn\'t buy this book yet, comments are not allowed!';
-        end if;
+    if new.book!=old.book or new.number!=old.number or new.customer!=old.customer then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Changing `book`, `number` or `customer` columns is not allowed!';
     end if;
 end//
 delimiter ;

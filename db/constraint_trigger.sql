@@ -60,8 +60,17 @@ create trigger customerInsertTrigger
 before insert on customer
 for each row
 begin
-    if date_add(new.dob,interval 12 year)>curdate() then
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer must be at least 12 years old!';
+    if date_add(new.dob,interval 16 year)>curdate() then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer must be at least 16 years old!';
+    end if;
+    if not new.phone REGEXP '^[0-9]{10}$' then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer phone contain non-numeric character!';
+    end if;
+    if not new.cardNumber REGEXP '^[0-9]{8,16}$' then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer card number contain non-numeric character!';
+    end if;
+    if not new.email REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer email format is not valid!';
     end if;
 end//
 delimiter ;
@@ -72,8 +81,29 @@ create trigger customerUpdateTrigger
 before update on customer
 for each row
 begin
-    if date_add(new.dob,interval 12 year)>curdate() then
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer must be at least 12 years old!';
+    if date_add(new.dob,interval 16 year)>curdate() then
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer must be at least 16 years old!';
+    end if;
+    if not new.phone REGEXP '^[0-9]{10}$' then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer phone contain non-numeric character!';
+    end if;
+    if not new.cardNumber REGEXP '^[0-9]{8,16}$' then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer card number contain non-numeric character!';
+    end if;
+    if not new.email REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer email format is not valid!';
+    end if;
+end//
+delimiter ;
+
+drop trigger if exists customerDeleteTrigger;
+delimiter //
+create trigger customerDeleteTrigger
+before delete on customer
+for each row
+begin
+	if exists(select * from customerOrder where customerOrder.status=true and customerOrder.customer=old.id) then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Can not remove this customer from the database, the customer has already bought something!';
     end if;
 end//
 delimiter ;
