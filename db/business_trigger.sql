@@ -67,12 +67,12 @@ BEGIN
     DECLARE totalRatings int default 0;
     DECLARE newAverageRating double default 0;
 
-    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE book = NEW.book AND number = NEW.number;
+    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE rating.book = NEW.book AND rating.number = NEW.number;
     
     IF totalRatings > 0 THEN
 		SET newAverageRating := total_star_Ratings / totalRatings;
     END IF;
-    UPDATE edition SET avgStar = newAverageRating WHERE book = NEW.book AND number = NEW.number;
+    UPDATE edition SET avgStar = newAverageRating WHERE edition.id = NEW.book AND edition.number = NEW.number;
 END//
 DELIMITER ;
 
@@ -86,12 +86,12 @@ BEGIN
     DECLARE totalRatings int default 0;
     DECLARE newAverageRating double default 0;
 
-    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE book = NEW.book AND number = NEW.number;
+    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE rating.book = NEW.book AND rating.number = NEW.number;
     
     IF totalRatings > 0 THEN
 		SET newAverageRating := total_star_Ratings / totalRatings;
     END IF;
-    UPDATE edition SET avgStar = newAverageRating WHERE book = NEW.book AND number = NEW.number;
+    UPDATE edition SET avgStar = newAverageRating WHERE edition.id = NEW.book AND edition.number = NEW.number;
 END//
 DELIMITER ;
 
@@ -105,12 +105,12 @@ BEGIN
     DECLARE totalRatings int default 0;
     DECLARE newAverageRating double default 0;
 
-    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE book = old.book AND number = old.number;
+    SELECT COUNT(*), SUM(star) INTO totalRatings, total_star_Ratings FROM rating WHERE rating.book = old.book AND rating.number = old.number;
     
     IF totalRatings > 0 THEN
 		SET newAverageRating := total_star_Ratings / totalRatings;
     END IF;
-    UPDATE edition SET avgStar = newAverageRating WHERE book = old.book AND number = old.number;
+    UPDATE edition SET avgStar = newAverageRating WHERE edition.id = old.book AND edition.number = old.number;
 END//
 DELIMITER ;
 
