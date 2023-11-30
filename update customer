@@ -1,89 +1,144 @@
--- thủ tục update sẽ kiểm tra các thuộc tính trong bảng customer ( format sđt, format email, referrer và id ko dc trùng nhau, birthdate) , nếu phát hiện hàng nào vi phạm thì xóa nó
+--update thông tin khách hàng , kiểm tra format sđt, card, birthdate, point, referrer!= id,
+--username and password is unique , password is 8 character long, duplicated data input, customer not found
 USE bookstore;
 
-USE bookstore;
+
 DELIMITER //
 
-CREATE PROCEDURE updateCustomers()
+CREATE PROCEDURE updateCustomer(
+    IN customerId VARCHAR(10),
+    IN customerName VARCHAR(100),
+    IN customerDob DATE,
+    IN customerAddress TEXT,
+    IN customerPhone VARCHAR(10),
+    IN customerCardNumber VARCHAR(15),
+    IN customerPoint INT,
+    IN customerEmail VARCHAR(100),
+    IN customerUsername VARCHAR(20),
+    IN customerPassword VARCHAR(20),
+    IN customerReferrer VARCHAR(10)
+)
 BEGIN
- DECLARE invalidPhone INT DEFAULT 0;
-    DECLARE invalidEmail INT DEFAULT 0;
-    DECLARE sameReferrer INT DEFAULT 0;
-    DECLARE invalidDOB INT DEFAULT 0;
-    -- Create a temporary table to store IDs to be deleted
-     DROP TEMPORARY TABLE IF EXISTS tempToDelete;
-    CREATE TEMPORARY TABLE tempToDelete (idToDelete VARCHAR(10));
+    DECLARE existingCustomerId VARCHAR(10);
+    DECLARE existingCustomerEmail VARCHAR(100);
+    DECLARE existingCustomerPhone VARCHAR(10);
+    DECLARE existingCustomerCardNumber VARCHAR(15);
+    DECLARE existingCustomerUsername VARCHAR(20);
 
-    -- Variables to track cases
-   
-
-    -- Insert IDs with invalid phone numbers
-    INSERT INTO tempToDelete
-    SELECT id FROM customer WHERE LENGTH(phone) != 10 OR phone NOT REGEXP '^[0-9]+$';
-
-    -- Set variable and print message for invalid phone numbers
-    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
-        SET invalidPhone = 1;
-        SELECT 'Deleting customers with invalid phone numbers...';
+    -- Check email format and uniqueness
+    IF NOT (customerEmail REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid email format';
     END IF;
-DO SLEEP(2);
-    -- Clear the temporary table
-    TRUNCATE TABLE tempToDelete;
 
-    -- Insert IDs with invalid email addresses
-    INSERT INTO tempToDelete
-    SELECT id FROM customer WHERE email NOT REGEXP '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$';
-
-    -- Set variable and print message for invalid email addresses
-    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
-        SET invalidEmail = 1;
-        SELECT 'Deleting customers with invalid email addresses...';
+    -- Check phone format (Vietnam) and uniqueness
+    IF NOT (customerPhone REGEXP '^[0-9]+$') THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid phone number format';
     END IF;
-DO SLEEP(2);
-    -- Clear the temporary table
-    TRUNCATE TABLE tempToDelete;
 
-    -- Insert IDs where referrer is the same as the customer ID
-    INSERT INTO tempToDelete
-    SELECT id FROM customer WHERE id = referrer;
-
-    -- Set variable and print message for customers with the same referrer ID
-    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
-        SET sameReferrer = 1;
-        SELECT 'Deleting customers with the same referrer ID...';
+    -- Check birthdate
+    IF customerDob > CURRENT_DATE THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid date of birth';
     END IF;
-DO SLEEP(2);
-    -- Clear the temporary table
-    TRUNCATE TABLE tempToDelete;
 
-    -- Insert IDs where dob is greater than current date
-    INSERT INTO tempToDelete
-    SELECT id FROM customer WHERE dob > CURDATE();
-
-    -- Set variable and print message for customers with dob greater than current date
-    IF (SELECT COUNT(*) FROM tempToDelete) > 0 THEN
-        SET invalidDOB = 1;
-        SELECT 'Deleting customers with date of birth greater than current date...';
+    -- Check if the referrer is not the same as the customer id
+    IF customerReferrer = customerId THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Referrer cannot be the same as customer id';
     END IF;
-DO SLEEP(2);
-    -- Clear the temporary table
-    TRUNCATE TABLE tempToDelete;
+ IF customerPoint < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Point must be greater than 0';
+    END IF;
+    -- Check password length and uniqueness
+    IF LENGTH(customerPassword) <= 8 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Password must be more than 8 characters long';
+    END IF;
 
-    -- Delete rows from customer table based on the temporary table
-    DELETE FROM customer WHERE id IN (SELECT idToDelete FROM tempToDelete);
+    -- Check card number length and uniqueness
+    IF LENGTH(customerCardNumber) <> 15 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid card number length';
+    END IF;
 
-    -- Print overall message
-    IF invalidPhone + invalidEmail + sameReferrer + invalidDOB > 0 THEN
-        SELECT 'Invalid customers deleted successfully.';
+    -- Check username uniqueness
+    IF (SELECT COUNT(*) FROM customer WHERE username = customerUsername AND id != customerId) > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Username already exists';
+    END IF;
+
+    -- Check email uniqueness
+    IF (SELECT COUNT(*) FROM customer WHERE email = customerEmail AND id != customerId) > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Email already exists';
+    END IF;
+
+    -- Check phone uniqueness
+    IF (SELECT COUNT(*) FROM customer WHERE phone = customerPhone AND id != customerId) > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Phone number already exists';
+    END IF;
+
+    -- Check card number uniqueness
+    IF (SELECT COUNT(*) FROM customer WHERE cardNumber = customerCardNumber AND id != customerId) > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Card number already exists';
+    END IF;
+
+    -- Check if the new data is the same as the existing data
+    SELECT id, email, phone, cardNumber, username
+    INTO existingCustomerId, existingCustomerEmail, existingCustomerPhone, existingCustomerCardNumber, existingCustomerUsername
+    FROM customer
+    WHERE id = customerId;
+
+    IF (
+        existingCustomerId = customerId
+        AND existingCustomerEmail = customerEmail
+        AND existingCustomerPhone = customerPhone
+        AND existingCustomerCardNumber = customerCardNumber
+        AND existingCustomerUsername = customerUsername
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No changes detected.';
+
     ELSE
-        SELECT 'No invalid customers found.';
-    END IF;
+        -- Update customer data
+        UPDATE customer
+        SET
+            name = customerName,
+            dob = customerDob,
+            address = customerAddress,
+            phone = customerPhone,
+            cardNumber = customerCardNumber,
+            point = customerPoint,
+            email = customerEmail,
+            username = customerUsername,
+            password = customerPassword,
+            referrer = customerReferrer
+        WHERE id = customerId;
 
-    -- Drop the temporary table
-   
-END;
-//
+        SELECT 'Customer updated successfully' AS result;
+    END IF;
+END //
 
 DELIMITER ;
 ----------------------
-CALL updateCustomers();
+USE bookstore;
+
+
+CALL updateCustomer(
+    'CUSTOMER1',
+    'John Doe',
+    '2005-05-15',
+    '123 Main St, Cityville',
+    '4876543210',
+    '123456789012345',
+    100,
+    'john.doe@email.com',
+    'john_doe',
+    'newpassword123',
+    NULL
+);
