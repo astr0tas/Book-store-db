@@ -468,6 +468,10 @@ begin
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Referrer\'s email not found!';
     end if;
     
+    IF LENGTH(password) <= 8 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Password must be more than 8 characters long!';
+    END IF;
+    
     begin
 		declare counter int default 0;
         select cast(substr(id,9) as unsigned) into counter from customer ORDER BY id DESC LIMIT 1;
@@ -585,7 +589,67 @@ begin
     end if;
     
     if password is not null then
-		update customer set customer.password=password where customer.id=customerID;
+		IF LENGTH(password) <= 8 THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Password must be more than 8 characters long!';
+		else
+			update customer set customer.password=password where customer.id=customerID;
+		END IF;
     end if;
 end//
 delimiter ;
+
+drop procedure if exists GetTop5BestSellers;
+DELIMITER //
+CREATE PROCEDURE GetTop5BestSellers(
+    IN startDateParam DATE,
+    IN endDateParam DATE,
+    in atLeast int
+)
+BEGIN
+	if startDateParam is null then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`startDateParam` parameter is null!';
+    end if;
+    
+    if endDateParam is null then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`endDateParam` parameter is null!';
+    end if;
+    
+    if startDateParam>endDateParam then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`startDateParam` value is larger than `endDateParam` value?';
+    end if;
+    
+    if atLeast is null then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`atLeast` parameter is null!';
+    end if;
+    
+    if atLeast<0 then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`atLeast` parameter value negative!';
+    end if;
+    
+	SELECT
+        b.id AS BookID,
+        b.name AS BookName,
+        SUM(sales.TotalSales) AS TotalSales
+    FROM (
+		SELECT poc.book, sum(poc.amount) AS TotalSales
+		FROM customerOrder co
+		JOIN physicalOrderContain poc ON co.id = poc.orderID
+		WHERE co.orderTime BETWEEN startDateParam AND endDateParam AND co.status = 1
+		GROUP BY poc.book
+        
+		UNION
+        
+        SELECT foc.book, COUNT(foc.orderID) AS TotalSales
+        FROM customerOrder co
+        JOIN fileOrderContain foc ON co.id = foc.orderID
+        WHERE co.orderTime BETWEEN startDateParam AND endDateParam AND co.status = 1
+        GROUP BY foc.book
+    ) AS sales
+    JOIN book b ON sales.book = b.id
+    GROUP BY BookID, BookName
+    having TotalSales>=atLeast
+    ORDER BY TotalSales DESC,BookName
+    LIMIT 5;
+END //
+DELIMITER ;
+-- CALL GetTop5BestSellers('2023-01-01', '2023-12-01',2);

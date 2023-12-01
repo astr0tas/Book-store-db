@@ -127,9 +127,9 @@ insert into fileCopy (book,number,filePath) values
 
 -- Inserting data into the 'customer' table
 INSERT INTO customer (id, name, dob, address, phone, cardNumber, point, email, username, password, referrer) VALUES
-('CUSTOMER1', 'John Doe', '1990-05-15', '123 Main St, Cityville', '1234567890', '123456789012345', 2.349, 'john.doe@email.com', 'john_doe', 'password123', NULL),
-('CUSTOMER2', 'Jane Smith', '1985-08-22', '456 Oak St, Townsville', '9876543210', '987654321098765', 4.4975, 'jane.smith@email.com', 'jane_smith', 'securePW567', 'CUSTOMER1'),
-('CUSTOMER3', 'Bob Johnson', '1978-12-10', '789 Pine St, Villagetown', '5551112222', '111122223333444', 0, 'bob.johnson@email.com', 'bob_j', 'pass123word', 'CUSTOMER2');
+('CUSTOMER1', 'John Doe', '1990-05-15', '123 Main St, Cityville', '1234567890', '123456789012345', 3.2485, 'john.doe@email.com', 'john_doe', 'password123', NULL),
+('CUSTOMER2', 'Jane Smith', '1985-08-22', '456 Oak St, Townsville', '9876543210', '987654321098765', 8.696, 'jane.smith@email.com', 'jane_smith', 'securePW567', 'CUSTOMER1'),
+('CUSTOMER3', 'Bob Johnson', '1978-12-10', '789 Pine St, Villagetown', '5551112222', '111122223333444', 7.447, 'bob.johnson@email.com', 'bob_j', 'pass123word', 'CUSTOMER2');
 
 -- Inserting data into the 'wishlist' table
 insert into wishlist(book,number,customer) values
@@ -142,31 +142,41 @@ insert into wishlist(book,number,customer) values
 -- Inserting data into the 'customerOrder' table
 insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer,status) values
 ('ORDER1',63.577,null,19.393,'CUSTOMER1',false),
-('ORDER2',46.98,'2023-01-01 15:01:30',0,'CUSTOMER1',true),
-('ORDER3',89.95,'2023-01-01 18:01:30',0,'CUSTOMER2',true),
-('ORDER4',14.392,null,3.598,'CUSTOMER3',false);
+('ORDER2',64.97,'2023-01-01 15:01:30',0,'CUSTOMER1',true),
+('ORDER3',173.92,'2023-01-01 18:01:30',0,'CUSTOMER2',true),
+('ORDER4',14.392,null,3.598,'CUSTOMER3',false),
+('ORDER5',64.97,'2023-01-01 15:01:30',0,'CUSTOMER3',true),
+('ORDER6',83.97,'2023-01-01 18:01:30',0,'CUSTOMER3',true);
 
 -- Inserting data into the 'physicalOrder' table
 insert into physicalOrder(orderID,destinationAddress) values
 ('ORDER1','123 Main St, Cityville'),
-('ORDER3','456 Oak St, Townsville333');
+('ORDER3','456 Oak St, Townsville'),
+('ORDER6','789 Pine St, Villagetown');
 
 -- Inserting data into the 'fileOrder' table
 insert into fileOrder(orderID) values
 ('ORDER2'),
+('ORDER5'),
 ('ORDER4');
 
 -- Inserting data into the 'fileOrderContain' table
 insert into fileOrderContain(book,number,orderID) values -- this will need a trigger check for age appropriate
 ('BOOK1',1,'ORDER2'),
 ('BOOK5',1,'ORDER2'),
+('BOOK10',1,'ORDER2'),
+('BOOK1',1,'ORDER5'),
+('BOOK5',1,'ORDER5'),
+('BOOK10',1,'ORDER5'),
 ('BOOK4',1,'ORDER4');
 
 -- Inserting data into the 'physicalOrderContain' table
 insert into physicalOrderContain(book,number,orderID,amount) values -- this will need a trigger check for age appropriate
 ('BOOK3',1,'ORDER1',2),
 ('BOOK6',1,'ORDER1',1),
-('BOOK10',1,'ORDER3',5);
+('BOOK10',1,'ORDER3',5),
+('BOOK1',1,'ORDER3',3),
+('BOOK1',1,'ORDER6',3);
 
 -- Inserting data into the 'discount' table
 insert into discount(id) values

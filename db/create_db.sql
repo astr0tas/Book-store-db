@@ -93,7 +93,7 @@ create table customer(
     point double default 0 check(point>=0),
     email varchar(100) unique not null,
     username varchar(20) unique not null,
-    password varchar(20) not null,
+    password varchar(20) not null check(length(password)>8),
     referrer varchar(20) references customer(id) on delete set null on update cascade,
     status boolean not null default true
 );
