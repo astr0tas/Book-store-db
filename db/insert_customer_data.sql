@@ -1,11 +1,11 @@
 DELIMITER //
 
 CREATE PROCEDURE InsertCustomer(
-    IN id VARCHAR(255),
-    IN name VARCHAR(255),
+    IN id VARCHAR(10),
+    IN name VARCHAR(100),
     IN dob DATE,
-    IN email VARCHAR(255),
-    IN phone VARCHAR(20),
+    IN email VARCHAR(100),
+    IN phone VARCHAR(10),
     IN cardNumber VARCHAR(15),
     IN address TEXT,
     IN status VARCHAR(6),
