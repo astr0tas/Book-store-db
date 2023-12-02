@@ -30,17 +30,17 @@ begin
 
 	begin
 	declare orderId varchar(20) default null;
-	if not exists(select * from customerOrder join fileOrder on fileOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by customerOrder.id desc limit 1) then
+	if not exists(select * from customerOrder join fileOrder on fileOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by cast(substr(customerOrder.id,6) as unsigned) desc limit 1) then
 		begin
 			declare counter int default 0;
-            select cast(substr(id,6) as unsigned) into counter from customerOrder ORDER BY id DESC LIMIT 1;
+            select cast(substr(id,6) as unsigned) into counter from customerOrder ORDER BY cast(substr(id,6) as unsigned) DESC LIMIT 1;
             set counter:=counter+1;
 			insert into customerOrder(id,orderTime,customer) values(concat('ORDER',counter),now(),customer);
             insert into fileOrder values(concat('ORDER',counter));
         end;
     end if;
     
-    select customerOrder.id into orderId from customerOrder join fileOrder on fileOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by customerOrder.id desc limit 1;
+    select customerOrder.id into orderId from customerOrder join fileOrder on fileOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by cast(substr(customerOrder.id,6) as unsigned) desc limit 1;
     insert into fileOrderContain values(edition,book,orderId);
     
     call updateOrderCost(orderId);
@@ -87,17 +87,17 @@ begin
     
     begin
 	declare orderId varchar(20) default null;
-	if not exists(select * from customerOrder join physicalOrder on physicalOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by customerOrder.id desc limit 1) then
+	if not exists(select * from customerOrder join physicalOrder on physicalOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by cast(substr(customerOrder.id,6) as unsigned) desc limit 1) then
 		begin
 			declare counter int default 0;
-            select cast(substr(id,6) as unsigned) into counter from customerOrder ORDER BY id DESC LIMIT 1;
+            select cast(substr(id,6) as unsigned) into counter from customerOrder ORDER BY cast(substr(id,6) as unsigned) DESC LIMIT 1;
             set counter:=counter+1;
 			insert into customerOrder(id,orderTime,customer) values(concat('ORDER',counter),now(),customer);
             insert into physicalOrder values(concat('ORDER',counter));
         end;
     end if;
     
-    select customerOrder.id into orderId from customerOrder join physicalOrder on physicalOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by customerOrder.id desc limit 1;
+    select customerOrder.id into orderId from customerOrder join physicalOrder on physicalOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by cast(substr(customerOrder.id,6) as unsigned) desc limit 1;
     insert into physicalOrderContain values(edition,book,orderId,amount);
     
 	call updateOrderCost(orderId);  
@@ -135,7 +135,7 @@ begin
     
     begin
 	declare orderId varchar(20) default null;
-    select customerOrder.id into orderId from customerOrder join fileOrder on fileOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by customerOrder.id desc limit 1;
+    select customerOrder.id into orderId from customerOrder join fileOrder on fileOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by cast(substr(customerOrder.id,6) as unsigned) desc limit 1;
     delete from fileOrderContain where fileOrderContain.orderId=orderId and fileOrderContain.book=book and fileOrderContain.number=edition;
     
     call updateOrderCost(orderId);
@@ -176,7 +176,7 @@ begin
 	declare orderId varchar(20) default null;
     declare currentAmount int default 1;
     
-    select customerOrder.id into orderId from customerOrder join physicalOrder on physicalOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by customerOrder.id desc limit 1;
+    select customerOrder.id into orderId from customerOrder join physicalOrder on physicalOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by cast(substr(customerOrder.id,6) as unsigned) desc limit 1;
     select physicalOrderContain.amount into currentAmount where physicalOrderContain.orderId=orderId and physicalOrderContain.book=book and physicalOrderContain.number=edition;
     
     if amount is null or (amount is not null and amount>currentAmount) then
@@ -474,7 +474,7 @@ begin
     
     begin
 		declare counter int default 0;
-        select cast(substr(id,9) as unsigned) into counter from customer ORDER BY id DESC LIMIT 1;
+        select cast(substr(id,9) as unsigned) into counter from customer ORDER BY cast(substr(id,9) as unsigned) DESC LIMIT 1;
         set counter:=counter+1;
         insert into customer values(concat('CUSTOMER',counter),name,dob,address,phone,cardNumber,0,email,username,password,referrerID);
     end;
