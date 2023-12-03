@@ -598,7 +598,7 @@ begin
 end//
 delimiter ;
 
-drop procedure if exists GetTop5BestSellers;
+drop procedure if exists GetTop5BestSellers; -- existence is questionable?
 DELIMITER //
 CREATE PROCEDURE GetTop5BestSellers(
     IN startDateParam DATE,

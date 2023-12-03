@@ -127,9 +127,9 @@ insert into fileCopy (book,number,filePath) values
 
 -- Inserting data into the 'customer' table
 INSERT INTO customer (id, name, dob, address, phone, cardNumber, point, email, username, password, referrer) VALUES
-('CUSTOMER1', 'John Doe', '1990-05-15', '123 Main St, Cityville', '1234567890', '123456789012345', 3.2485, 'john.doe@email.com', 'john_doe', 'password123', NULL),
-('CUSTOMER2', 'Jane Smith', '1985-08-22', '456 Oak St, Townsville', '9876543210', '987654321098765', 8.696, 'jane.smith@email.com', 'jane_smith', 'securePW567', 'CUSTOMER1'),
-('CUSTOMER3', 'Bob Johnson', '1978-12-10', '789 Pine St, Villagetown', '5551112222', '111122223333444', 7.447, 'bob.johnson@email.com', 'bob_j', 'pass123word', 'CUSTOMER2');
+('CUSTOMER1', 'John Doe', '1990-05-15', '123 Main St, Cityville', '1234567890', '123456789012345', 2.3639, 'john.doe@email.com', 'john_doe', 'password123', NULL),
+('CUSTOMER2', 'Jane Smith', '1985-08-22', '456 Oak St, Townsville', '9876543210', '987654321098765', 6.53695, 'jane.smith@email.com', 'jane_smith', 'securePW567', 'CUSTOMER1'),
+('CUSTOMER3', 'Bob Johnson', '1978-12-10', '789 Pine St, Villagetown', '5551112222', '111122223333444', 5.30285, 'bob.johnson@email.com', 'bob_j', 'pass123word', 'CUSTOMER2');
 
 -- Inserting data into the 'wishlist' table
 insert into wishlist(book,number,customer) values
@@ -142,11 +142,11 @@ insert into wishlist(book,number,customer) values
 -- Inserting data into the 'customerOrder' table
 insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer,status) values
 ('ORDER1',63.577,null,19.393,'CUSTOMER1',false),
-('ORDER2',64.97,'2023-01-01 15:01:30',0,'CUSTOMER1',true),
-('ORDER3',173.92,'2023-01-01 18:01:30',0,'CUSTOMER2',true),
+('ORDER2',47.278,'2023-01-01 15:01:30',17.692,'CUSTOMER1',true),
+('ORDER3',130.739,'2023-01-01 18:01:30',43.181,'CUSTOMER2',true),
 ('ORDER4',14.392,null,3.598,'CUSTOMER3',false),
-('ORDER5',64.97,'2023-01-01 15:01:30',0,'CUSTOMER3',true),
-('ORDER6',83.97,'2023-01-01 18:01:30',0,'CUSTOMER3',true);
+('ORDER5',47.278,'2023-01-01 15:01:30',17.692,'CUSTOMER3',true),
+('ORDER6',58.779,'2023-01-01 18:01:30',25.191,'CUSTOMER3',true);
 
 -- Inserting data into the 'physicalOrder' table
 insert into physicalOrder(orderID,destinationAddress) values
@@ -193,7 +193,14 @@ insert into discount(id) values
 insert into discountApply(orderId,discount) values
 ('ORDER1','E_DISCOUNT1'),
 ('ORDER1','E_DISCOUNT2'),
-('ORDER4','E_DISCOUNT1');
+('ORDER4','E_DISCOUNT1'),
+('ORDER2','E_DISCOUNT1'),
+('ORDER2','E_DISCOUNT2'),
+('ORDER3','E_DISCOUNT1'),
+('ORDER3','E_DISCOUNT2'),
+('ORDER5','E_DISCOUNT1'),
+('ORDER5','E_DISCOUNT2'),
+('ORDER6','E_DISCOUNT2');
 
 -- Inserting data into the 'customerDiscount' table
 insert into customerDiscount(discount,point,discountPercent) values
@@ -209,8 +216,8 @@ insert into referrerDiscount(discount,numberOfPeople,discountPercent) values
 
 -- Inserting data into the 'eventDiscount' table
 insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values
-('E_DISCOUNT1',20,true,date_add(now(),interval 3 day),date_add(now(),interval 10 day)),
-('E_DISCOUNT2',30,false,date_add(now(),interval 2 day),date_add(now(),interval 10 day));
+('E_DISCOUNT1',20,true,'2023-01-01','2023-12-01'),
+('E_DISCOUNT2',30,false,'2023-01-01','2023-12-01');
 
 -- Inserting data into the 'eventApply' table
 insert into eventApply(discount,book) values

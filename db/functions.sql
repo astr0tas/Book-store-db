@@ -84,3 +84,71 @@ BEGIN
 END //
 DELIMITER ;
 SET GLOBAL log_bin_trust_function_creators = 0;
+
+drop function if exists GetnthEventDiscount; -- existence is questionable?
+SET GLOBAL log_bin_trust_function_creators = 1;
+DELIMITER //
+CREATE function GetnthEventDiscount(
+	startDate date,
+    endDate date,
+    n int
+)
+returns varchar(20)
+BEGIN
+	if startDate is null then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`startDate` parameter is null!';
+    end if;
+    
+    if endDate is null then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`endDate` parameter is null!';
+    end if;
+    
+    if startDate>endDate then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`startDate` value is larger than `endDate` value?';
+    end if;
+    
+    if n is null then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`nth` parameter is null!';
+    end if;
+    
+    if n<=0 then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '`nth` parameter must be a positive value!';
+    end if;
+    
+    begin
+    declare result varchar(20) default null;
+    declare offsetTarget int default null;
+    
+    -- Create a temporary table to store the result
+    DROP TEMPORARY TABLE IF EXISTS TempEventOrderCount;
+    CREATE TEMPORARY TABLE TempEventOrderCount AS
+    SELECT
+        ed.discount AS event_id,
+        COUNT(co.id) AS order_count
+    FROM
+        eventDiscount ed
+	join
+		discountApply da on da.discount=ed.discount
+    JOIN
+        customerOrder co ON co.id=da.orderID
+	where
+        co.orderTime BETWEEN startDate AND endDate and co.status=true
+    GROUP BY
+        event_id
+    ORDER BY
+        order_count DESC,event_id;
+	
+    set offsetTarget:=n-1;
+    -- Select the desired number of rows from the temporary table
+    SELECT TempEventOrderCount.event_id into result FROM TempEventOrderCount order by TempEventOrderCount.order_count desc,TempEventOrderCount.event_id limit 1 offset offsetTarget;
+
+    -- Drop the temporary table
+    DROP TEMPORARY TABLE IF EXISTS TempEventOrderCount;
+    
+    return result;
+    end;
+END //
+DELIMITER ;
+SET GLOBAL log_bin_trust_function_creators = 0;
+
+-- select GetnthEventDiscount('2023-01-01','2023-12-01',2);
