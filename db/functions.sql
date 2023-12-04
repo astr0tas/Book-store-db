@@ -151,7 +151,3 @@ BEGIN
 END //
 DELIMITER ;
 SET GLOBAL log_bin_trust_function_creators = 0;
-
--- select * from customerOrder join discountApply on discountApply.orderID=customerOrder.id where customerOrder.status=true order by cast(substr(customerOrder.id,6) as unsigned),cast(substr(discountApply.discount,11) as unsigned);
-
--- select GetnthEventDiscount('2023-01-01','2023-12-31',2);

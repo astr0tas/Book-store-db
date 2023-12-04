@@ -106,7 +106,7 @@ create table rating(
     customer varchar(20) references customer(id) on delete cascade on update cascade,
     primary key(book,number,customer),
     foreign key(book,number) references edition(id,number) on delete cascade on update cascade,
-    star int not null default 0 check(star>=0 and star<=5)
+    star double not null default 0 check(star>=0 and star<=5)
 );
 
 create table wishlist(
