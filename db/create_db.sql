@@ -4,10 +4,10 @@ create database bookstore;
 
 use bookstore;
 
+-- Important
 create table discountConfig(
 	discountPercentOnTotalCost double primary key
 );
-
 insert into discountConfig values(5);
 
 create table category(
@@ -17,6 +17,8 @@ create table category(
 create table publisher(
 	name varchar(100) primary key
 );
+-- Important
+INSERT INTO publisher (name) VALUES("N/A");
 
 create table author(
 	id varchar(20) primary key,

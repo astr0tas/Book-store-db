@@ -1,8 +1,5 @@
 use bookstore;
 
--- Important
-INSERT INTO publisher (name) VALUES("N/A");
-
 -- Inserting data into the 'category' table
 INSERT INTO category (name) VALUES
 ('Fiction'),
@@ -151,15 +148,6 @@ insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer,status) 
 ('ORDER8',48.38,null,23.09,'CUSTOMER3',false),
 ('ORDER9',49.08,null,23.39,'CUSTOMER2',false),
 ('ORDER10',31.2865,null,14.6935,'CUSTOMER2',false);
-
--- select * from customerOrder where status=false order by id;
--- select * from physicalOrderContain;
--- select * from customer;
--- call customerPayUp('ORDER8');
--- call customerPayUp('ORDER10');
--- call customerPayUp('ORDER7');
--- call removeFromPhysicalOrder('CUSTOMER2','BOOK1',1,1);
--- select * from discountApply;
 
 -- Inserting data into the 'physicalOrder' table
 insert into physicalOrder(orderID,destinationAddress) values
