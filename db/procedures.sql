@@ -460,11 +460,12 @@ begin
     if cardNumber is not null and not cardNumber REGEXP '^[0-9]{8,16}$' then
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer card number contain non-numeric character!';
     end if;
-    
-    select referrer into referrerID from customer where email=referrerEmail;
-    
-    if referrerID is null then
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Referrer\'s email not found!';
+	
+    if referrerEmail is not null then
+		select id into referrerID from customer where customer.email=referrerEmail;
+		if referrerID is null then
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Referrer\'s email not found!';
+		end if;
     end if;
     
     IF LENGTH(password) <= 8 THEN
@@ -475,7 +476,7 @@ begin
 		declare counter int default 0;
         select cast(substr(id,9) as unsigned) into counter from customer ORDER BY cast(substr(id,9) as unsigned) DESC LIMIT 1;
         set counter:=counter+1;
-        insert into customer values(concat('CUSTOMER',counter),name,dob,address,phone,cardNumber,0,email,username,password,referrerID);
+        insert into customer values(concat('CUSTOMER',counter),name,dob,address,phone,cardNumber,0,email,username,password,referrerID,true);
     end;
 end//
 delimiter ;
@@ -521,6 +522,10 @@ begin
     
     if not exists(select * from customer where id=customerID) then
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Customer not found!';
+    end if;
+    
+    if name is null and dob is null and address is null and phone is null and cardNumber is null and email is null and password is null then
+		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'All update parameters are null!';
     end if;
     
     if name is not null then

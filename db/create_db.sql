@@ -4,10 +4,10 @@ create database bookstore;
 
 use bookstore;
 
+-- Important
 create table discountConfig(
 	discountPercentOnTotalCost double primary key
 );
-
 insert into discountConfig values(5);
 
 create table category(
@@ -17,6 +17,8 @@ create table category(
 create table publisher(
 	name varchar(100) primary key
 );
+-- Important
+INSERT INTO publisher (name) VALUES("N/A");
 
 create table author(
 	id varchar(20) primary key,
@@ -104,7 +106,7 @@ create table rating(
     customer varchar(20) references customer(id) on delete cascade on update cascade,
     primary key(book,number,customer),
     foreign key(book,number) references edition(id,number) on delete cascade on update cascade,
-    star int not null default 0 check(star>=0 and star<=5)
+    star double not null default 0 check(star>=0 and star<=5)
 );
 
 create table wishlist(

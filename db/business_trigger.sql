@@ -11,11 +11,6 @@ begin
 end//
 delimiter ;
 
--- SET SQL_SAFE_UPDATES = 0;
--- delete from publisher where name='Bloomsbury';
--- SELECT * FROM EDITION;
--- SET SQL_SAFE_UPDATES = 1;
-
 -- check whether the customer has bought the product or not in order to rate it
 drop trigger if exists ratingBeforeInsertTrigger;
 delimiter //
@@ -114,9 +109,6 @@ BEGIN
 END//
 DELIMITER ;
 
--- insert into rating(book,number,customer,star) values('BOOK10',1,'CUSTOMER1',4);
--- update rating set book='BOOK10' where book='BOOK1' and customer='CUSTOMER1';
-
 -- check whether the customer has bought the product or not in order to write comments about it
 drop trigger if exists commentInsertTrigger;
 delimiter //
@@ -158,9 +150,6 @@ begin
 end//
 delimiter ;
 
--- insert into comment(book,number,customer) values('BOOK10',1,'CUSTOMER1');
--- update comment set book='BOOK10' where book='BOOK1' and customer='CUSTOMER1';
-
 -- check whether the event in `eventApply` is set to discount a limited number of books or not before the insertion
 drop trigger if exists eventApplyInsertTrigger;
 delimiter //
@@ -190,9 +179,6 @@ begin
 end//
 delimiter ;
 
--- insert into eventApply(discount,book) values ('E_DISCOUNT1','BOOK1');
--- update eventApply set discount='E_DISCOUNT1' where discount='E_DISCOUNT2' and book='BOOK1';
-
 -- if `applyForAll` of `eventDiscount` is set to true, delete all relevant rows in `eventApply`
 drop trigger if exists eventDiscountUpdateTrigger;
 delimiter //
@@ -205,11 +191,6 @@ begin
     end if;
 end//
 delimiter ;
-
--- SET SQL_SAFE_UPDATES = 0;
--- update eventDiscount set applyForAll=true where discount='E_DISCOUNT2';
--- select * from eventApply;
--- SET SQL_SAFE_UPDATES = 1;
 
 -- if `destinationAddress` in `physicalOrder`is null, get the customer default address, if that also null, return error
 drop trigger if exists physicalOrderInsertTrigger;
@@ -231,9 +212,6 @@ begin
 end//
 delimiter ;
 
--- insert into physicalOrder(orderID,destinationAddress) values('ORDER1',null);
--- select * from physicalOrder;
-
 drop trigger if exists physicalOrderUpdateTrigger;
 delimiter //
 create trigger physicalOrderUpdateTrigger
@@ -252,6 +230,3 @@ begin
     end if;
 end//
 delimiter ;
-
--- update physicalOrder set destinationAddress=null where orderID='ORDER3';
--- select * from physicalOrder;
