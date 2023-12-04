@@ -162,26 +162,26 @@ delimiter ;
 
 -- eventDiscount
 
-drop trigger if exists eventDiscountInsertTrigger;
-delimiter //
-create trigger eventDiscountInsertTrigger
-before insert on eventDiscount
-for each row
-begin
-    if new.startDate<now() then
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Event discount start date time must not be in the past!';
-    end if;
-end//
-delimiter ;
+-- drop trigger if exists eventDiscountInsertTrigger;
+-- delimiter //
+-- create trigger eventDiscountInsertTrigger
+-- before insert on eventDiscount
+-- for each row
+-- begin
+--     if new.startDate<now() then
+--             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Event discount start date time must not be in the past!';
+--     end if;
+-- end//
+-- delimiter ;
 
-drop trigger if exists eventDiscountUpdateTrigger;
-delimiter //
-create trigger eventDiscountUpdateTrigger
-before update on eventDiscount
-for each row
-begin
-    if new.startDate<now() then
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Event discount start date time must not be in the past!';
-    end if;
-end//
-delimiter ;
+-- drop trigger if exists eventDiscountUpdateTrigger;
+-- delimiter //
+-- create trigger eventDiscountUpdateTrigger
+-- before update on eventDiscount
+-- for each row
+-- begin
+--     if new.startDate<now() then
+--             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Event discount start date time must not be in the past!';
+--     end if;
+-- end//
+-- delimiter ;

@@ -146,19 +146,36 @@ insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer,status) 
 ('ORDER3',130.739,'2023-01-01 18:01:30',43.181,'CUSTOMER2',true),
 ('ORDER4',14.392,null,3.598,'CUSTOMER3',false),
 ('ORDER5',47.278,'2023-01-01 15:01:30',17.692,'CUSTOMER3',true),
-('ORDER6',58.779,'2023-01-01 18:01:30',25.191,'CUSTOMER3',true);
+('ORDER6',58.779,'2023-01-01 18:01:30',25.191,'CUSTOMER3',true),
+('ORDER7',30.9365,null,14.5435,'CUSTOMER1',false),
+('ORDER8',48.38,null,23.09,'CUSTOMER3',false),
+('ORDER9',49.08,null,23.39,'CUSTOMER2',false),
+('ORDER10',31.2865,null,14.6935,'CUSTOMER2',false);
+
+-- select * from customerOrder where status=false order by id;
+-- select * from physicalOrderContain;
+-- select * from customer;
+-- call customerPayUp('ORDER8');
+-- call customerPayUp('ORDER10');
+-- call customerPayUp('ORDER7');
+-- call removeFromPhysicalOrder('CUSTOMER2','BOOK1',1,1);
+-- select * from discountApply;
 
 -- Inserting data into the 'physicalOrder' table
 insert into physicalOrder(orderID,destinationAddress) values
 ('ORDER1','123 Main St, Cityville'),
 ('ORDER3','456 Oak St, Townsville'),
-('ORDER6','789 Pine St, Villagetown');
+('ORDER6','789 Pine St, Villagetown'),
+('ORDER8','789 Pine St, Villagetown'),
+('ORDER9','456 Oak St, Townsville');
 
 -- Inserting data into the 'fileOrder' table
 insert into fileOrder(orderID) values
 ('ORDER2'),
 ('ORDER5'),
-('ORDER4');
+('ORDER4'),
+('ORDER7'),
+('ORDER10');
 
 -- Inserting data into the 'fileOrderContain' table
 insert into fileOrderContain(book,number,orderID) values -- this will need a trigger check for age appropriate
@@ -168,7 +185,11 @@ insert into fileOrderContain(book,number,orderID) values -- this will need a tri
 ('BOOK1',1,'ORDER5'),
 ('BOOK5',1,'ORDER5'),
 ('BOOK10',1,'ORDER5'),
-('BOOK4',1,'ORDER4');
+('BOOK4',1,'ORDER4'),
+('BOOK3',1,'ORDER7'),
+('BOOK4',1,'ORDER7'),
+('BOOK6',1,'ORDER10'),
+('BOOK4',1,'ORDER10');
 
 -- Inserting data into the 'physicalOrderContain' table
 insert into physicalOrderContain(book,number,orderID,amount) values -- this will need a trigger check for age appropriate
@@ -176,7 +197,11 @@ insert into physicalOrderContain(book,number,orderID,amount) values -- this will
 ('BOOK6',1,'ORDER1',1),
 ('BOOK10',1,'ORDER3',5),
 ('BOOK1',1,'ORDER3',3),
-('BOOK1',1,'ORDER6',3);
+('BOOK1',1,'ORDER6',3),
+('BOOK3',1,'ORDER8',2),
+('BOOK8',1,'ORDER8',1),
+('BOOK1',1,'ORDER9',2),
+('BOOK8',1,'ORDER9',1);
 
 -- Inserting data into the 'discount' table
 insert into discount(id) values
@@ -187,20 +212,29 @@ insert into discount(id) values
 ('R_DISCOUNT2'),
 ('R_DISCOUNT3'),
 ('E_DISCOUNT1'),
-('E_DISCOUNT2');
+('E_DISCOUNT2'),
+('E_DISCOUNT3'),
+('E_DISCOUNT4'),
+('E_DISCOUNT5'),
+('E_DISCOUNT6');
 
 -- Inserting data into the 'discountApply' table
 insert into discountApply(orderId,discount) values
-('ORDER1','E_DISCOUNT1'),
-('ORDER1','E_DISCOUNT2'),
-('ORDER4','E_DISCOUNT1'),
 ('ORDER2','E_DISCOUNT1'),
 ('ORDER2','E_DISCOUNT2'),
 ('ORDER3','E_DISCOUNT1'),
 ('ORDER3','E_DISCOUNT2'),
 ('ORDER5','E_DISCOUNT1'),
 ('ORDER5','E_DISCOUNT2'),
-('ORDER6','E_DISCOUNT2');
+('ORDER6','E_DISCOUNT2'),
+('ORDER7','E_DISCOUNT3'),
+('ORDER7','E_DISCOUNT5'),
+('ORDER8','E_DISCOUNT3'),
+('ORDER8','E_DISCOUNT6'),
+('ORDER9','E_DISCOUNT6'),
+('ORDER9','E_DISCOUNT3'),
+('ORDER10','E_DISCOUNT5'),
+('ORDER10','E_DISCOUNT3');
 
 -- Inserting data into the 'customerDiscount' table
 insert into customerDiscount(discount,point,discountPercent) values
@@ -217,14 +251,21 @@ insert into referrerDiscount(discount,numberOfPeople,discountPercent) values
 -- Inserting data into the 'eventDiscount' table
 insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values
 ('E_DISCOUNT1',20,true,'2023-01-01','2023-12-01'),
-('E_DISCOUNT2',30,false,'2023-01-01','2023-12-01');
+('E_DISCOUNT2',30,false,'2023-01-01','2023-12-01'),
+('E_DISCOUNT3',30,true,now(),date_add(now(),interval 7 day)),
+('E_DISCOUNT4',25,false,now(),date_add(now(),interval 7 day)),
+('E_DISCOUNT5',35,false,now(),date_add(now(),interval 7 day)),
+('E_DISCOUNT6',40,false,now(),date_add(now(),interval 7 day));
 
 -- Inserting data into the 'eventApply' table
 insert into eventApply(discount,book) values
 ('E_DISCOUNT2','BOOK1'),
 ('E_DISCOUNT2','BOOK2'),
 ('E_DISCOUNT2','BOOK5'),
-('E_DISCOUNT2','BOOK6');
+('E_DISCOUNT2','BOOK6'),
+('E_DISCOUNT4','BOOK3'),
+('E_DISCOUNT5','BOOK4'),
+('E_DISCOUNT6','BOOK8');
 
 -- Inserting data into the 'rating' table
 insert into rating(book,number,customer,star) values

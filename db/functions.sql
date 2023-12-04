@@ -124,6 +124,7 @@ BEGIN
     CREATE TEMPORARY TABLE TempEventOrderCount AS
     SELECT
         ed.discount AS event_id,
+        ed.startDate as event_start_date,
         COUNT(co.id) AS order_count
     FROM
         eventDiscount ed
@@ -134,13 +135,13 @@ BEGIN
 	where
         co.orderTime BETWEEN startDate AND endDate and co.status=true
     GROUP BY
-        event_id
+        event_id,event_start_date
     ORDER BY
         order_count DESC,event_id;
 	
     set offsetTarget:=n-1;
     -- Select the desired number of rows from the temporary table
-    SELECT TempEventOrderCount.event_id into result FROM TempEventOrderCount order by TempEventOrderCount.order_count desc,TempEventOrderCount.event_id limit 1 offset offsetTarget;
+    SELECT TempEventOrderCount.event_id into result FROM TempEventOrderCount order by TempEventOrderCount.order_count desc,event_start_date desc,cast(substr(TempEventOrderCount.event_id,11) as unsigned) limit 1 offset offsetTarget;
 
     -- Drop the temporary table
     DROP TEMPORARY TABLE IF EXISTS TempEventOrderCount;
@@ -151,4 +152,6 @@ END //
 DELIMITER ;
 SET GLOBAL log_bin_trust_function_creators = 0;
 
--- select GetnthEventDiscount('2023-01-01','2023-12-01',2);
+-- select * from customerOrder join discountApply on discountApply.orderID=customerOrder.id where customerOrder.status=true order by cast(substr(customerOrder.id,6) as unsigned),cast(substr(discountApply.discount,11) as unsigned);
+
+-- select GetnthEventDiscount('2023-01-01','2023-12-31',2);

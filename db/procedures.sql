@@ -177,9 +177,9 @@ begin
     declare currentAmount int default 1;
     
     select customerOrder.id into orderId from customerOrder join physicalOrder on physicalOrder.orderId=customerOrder.id where customerOrder.customer=customer and customerOrder.status=false order by cast(substr(customerOrder.id,6) as unsigned) desc limit 1;
-    select physicalOrderContain.amount into currentAmount where physicalOrderContain.orderId=orderId and physicalOrderContain.book=book and physicalOrderContain.number=edition;
+    select physicalOrderContain.amount into currentAmount from physicalOrderContain where physicalOrderContain.orderId=orderId and physicalOrderContain.book=book and physicalOrderContain.number=edition;
     
-    if amount is null or (amount is not null and amount>currentAmount) then
+    if amount is null or (amount is not null and amount>=currentAmount) then
 		delete from physicalOrderContain where physicalOrderContain.orderId=orderId and physicalOrderContain.book=book and physicalOrderContain.number=edition;
 	else
 		update physicalOrderContain set physicalOrderContain.amount=physicalOrderContain.amount-amount where physicalOrderContain.orderId=orderId and physicalOrderContain.book=book and physicalOrderContain.number=edition;
@@ -207,7 +207,7 @@ begin
 	begin
     declare orderStatus boolean default false;
     select status into orderStatus from customerOrder where id=orderId;
-    if status then
+    if orderStatus then
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'This order has already been paid and can not be updated!';
     end if;
     
@@ -237,7 +237,7 @@ begin
                         select price into bookOriginalPrice from book where id=bookId;
                         select priceAfterDiscount(bookId,now(),orderId) into bookPriceAfterDiscount;
                         
-                        update customerOrder set totalCost=totalCost+priceAfterDiscount,totalDiscount=totalDiscount+(bookOriginalPrice-priceAfterDiscount) where id=orderId;
+                        update customerOrder set totalCost=totalCost+bookPriceAfterDiscount,totalDiscount=totalDiscount+(bookOriginalPrice-bookPriceAfterDiscount) where id=orderId;
                     end;
 				END LOOP loop_start;
 				CLOSE myCursor;
@@ -266,7 +266,7 @@ begin
 							select price into bookOriginalPrice from book where id=bookId;
 							select priceAfterDiscount(bookId,now(),orderId) into bookPriceAfterDiscount;
                             
-                            update customerOrder set totalCost=totalCost+priceAfterDiscount*orderAmount,totalDiscount=totalDiscount+(bookOriginalPrice-priceAfterDiscount)*orderAmount where id=orderId;
+                            update customerOrder set totalCost=totalCost+bookPriceAfterDiscount*orderAmount,totalDiscount=totalDiscount+(bookOriginalPrice-bookPriceAfterDiscount)*orderAmount where id=orderId;
                         end;
 					END LOOP loop_start;
 					CLOSE myCursor;
@@ -362,8 +362,6 @@ begin
 		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'This order has already been paid!';
 	end if;
     
-    update customerOrder set status=true,orderTime=now() where id=orderId;
-    
 	begin
 		declare customerId varchar(20) default null;
         declare total double default 0;
@@ -374,9 +372,10 @@ begin
         select totalCost into total from customerOrder where id=orderId;
         select discountPercentOnTotalCost into discount from discountConfig limit 1;
         
-        set addedPoints:=totalCost*discountPercentOnTotalCost/100.0;
+        set addedPoints:=total*discount/100.0;
         
         update customer set point=point+addedPoints where id=customerId;
+        update customerOrder set status=true,orderTime=now() where id=orderId;
     end;
     end;
 end//
