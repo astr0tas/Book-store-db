@@ -115,16 +115,12 @@ BEGIN
 	END IF;
 
     -- Kiểm tra email người giới thiệu (referrerEmail)
-    IF referrerEmail IS NULL THEN
-		SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Referrer email cannot be empty.';
-	ELSE
 		IF referrerEmail IS NOT NULL THEN
 			SELECT id INTO referrerID FROM customer WHERE customer.email=referrerEmail;
 				IF referrerID IS NULL THEN
 					SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Referrer\'s email not found!';
 				END IF;
 		END IF;
-	END IF;
 	
      BEGIN
 		DECLARE counter INT DEFAULT 0;
