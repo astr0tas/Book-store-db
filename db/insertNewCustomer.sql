@@ -12,9 +12,6 @@ CREATE PROCEDURE insertNewCustomer(
     IN referrerEmail VARCHAR(100)
 )
 BEGIN
-    DECLARE emailExists INT;
-    DECLARE phoneExists INT;
-    DECLARE errorMessage VARCHAR(255);
 	DECLARE referrerID VARCHAR(20) DEFAULT NULL;
     
     -- Kiểm tra tên
