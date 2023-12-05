@@ -82,7 +82,7 @@ update eventDiscount set applyForAll=true where discount='E_DISCOUNT4';
 select * from eventApply;
 
 -- Procedure 1
-CALL GetTop5BestSellers('2023-01-01', '2023-12-31',1);
+CALL GetTop5BestSellers('2023-12-05', '2023-12-31',1);
 CALL GetTop5BestSellers('2023-01-01', '2023-12-31',5);
 
 -- Procedure 2
@@ -120,3 +120,7 @@ SELECT GetTopRatedBooks() AS TopRatedBooks;
 select * from discountApply join customerOrder on customerOrder.id=discountApply.orderID where customerOrder.status=true;
 select GetnthEventDiscount('2023-01-01','2023-12-31',1);
 select GetnthEventDiscount('2023-01-01','2023-12-31',2);
+
+-- Procedure (optional)
+call customerPayUp('ORDER8');
+call customerPayUp('ORDER9');
