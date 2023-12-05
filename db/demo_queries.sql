@@ -104,7 +104,19 @@ select * from eventApply;
 select priceAfterDiscount('BOOK4',NOW(),'ORDER4');
 SELECT * FROM discountApply where orderID='ORDER4';
 
--- Function 2
+select * from physicalOrderContain where orderID='ORDER1';
+SELECT * FROM discountApply where orderID='ORDER1';
+select * from book where id='BOOK3';
+select * from eventDiscount;
+select * from eventApply;
+select priceAfterDiscount('BOOK3',NOW(),'ORDER1');
+SELECT * FROM discountApply where orderID='ORDER1';
+
+-- Function 2 (new)
+select * from edition;
+SELECT GetTopRatedBooks() AS TopRatedBooks;
+
+-- Function 2 (old)
 select * from discountApply join customerOrder on customerOrder.id=discountApply.orderID where customerOrder.status=true;
 select GetnthEventDiscount('2023-01-01','2023-12-31',1);
 select GetnthEventDiscount('2023-01-01','2023-12-31',2);

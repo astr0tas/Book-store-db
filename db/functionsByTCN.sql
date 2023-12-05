@@ -1,13 +1,11 @@
-drop function if exists PRICEAFTERDISCOUNT;
+use bookstore;
 
-
+drop function if exists priceAfterDiscount;
 DELIMITER //
-
-
-CREATE FUNCTION PRICEAFTERDISCOUNT(
+CREATE FUNCTION priceAfterDiscount(
     bookID VARCHAR(20),
-    orderID VARCHAR(20),
-	purchaseTime datetime
+    purchaseTime datetime,
+    orderID VARCHAR(20)
 ) 
 RETURNS DOUBLE
 DETERMINISTIC
@@ -34,7 +32,9 @@ BEGIN
     IF purchaseTime > NOW() then 
 		SIGNAL SQLSTATE '45000' SET message_text = '`purchaseTime` param is invalid because greater than current time!';
 	END IF;
-    
+	IF purchaseTime <> (SELECT purchaseTime FROM customerOrder WHERE id = orderID) THEN
+		SIGNAL SQLSTATE '45000' SET message_text = '`purchaseTime` param is invalid because it does not match the purchase time in the order!';
+	END IF;
     BEGIN 
 		DECLARE discountPercentVariable DOUBLE default 0.0;
 		DECLARE originalPrice DOUBLE default 0.0;
@@ -45,34 +45,24 @@ BEGIN
 			RETURN NULL;
 		END IF;
 		SELECT
-            IF(ed.applyForAll, MAX(ed.discountPercent), ed.discountPercent),
-            ed.discount INTO discountPercentVariable, discountEventId
+            ed.discountPercent, ed.discount INTO discountPercentVariable, discountEventId
         FROM eventDiscount ed
         WHERE ed.startDate <= purchaseTime AND purchaseTime <= ed.endDate
             AND (ed.applyForAll OR EXISTS (SELECT 1 FROM eventApply ea WHERE ea.discount = ed.discount AND ea.book = bookID))
         ORDER BY ed.discountPercent DESC, ed.discount ASC
         LIMIT 1;
-
-
         -- Apply discount to the order
-        IF discountEventId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM discountApply WHERE orderId = orderID AND discount = discountEventId) THEN
+        IF discountEventId IS NOT NULL AND NOT EXISTS (SELECT * FROM discountApply da WHERE da.orderId = orderID AND da.discount = discountEventId) THEN
             INSERT INTO discountApply (orderId, discount) VALUES (orderID, discountEventId);
         END IF;
-
-
         -- Calculate discounted price
         RETURN originalPrice - (originalPrice * discountPercentVariable / 100.0);
     END;
 END //
-
-
 DELIMITER ;
 
-
 DROP FUNCTION IF EXISTS GetTopRatedBooks;
-
 DELIMITER //
-
 CREATE FUNCTION GetTopRatedBooks()
 RETURNS VARCHAR(255)
 DETERMINISTIC
@@ -100,5 +90,4 @@ BEGIN
     -- Return the result
     RETURN result;
 END //
-
 DELIMITER ;

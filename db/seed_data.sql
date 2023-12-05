@@ -138,7 +138,6 @@ insert into wishlist(book,number,customer) values
 
 -- Inserting data into the 'customerOrder' table
 insert into customerOrder(id,totalCost,orderTime,totalDiscount,customer,status) values
-('ORDER0',120.129,'2022-12-13 15:15:30',19.393,'CUSTOMER1',true),
 ('ORDER1',63.577,null,19.393,'CUSTOMER1',false),
 ('ORDER2',47.278,'2023-01-01 15:01:30',17.692,'CUSTOMER1',true),
 ('ORDER3',130.739,'2023-01-01 18:01:30',43.181,'CUSTOMER2',true),
@@ -160,7 +159,6 @@ insert into physicalOrder(orderID,destinationAddress) values
 
 -- Inserting data into the 'fileOrder' table
 insert into fileOrder(orderID) values
-('ORDER0'),
 ('ORDER2'),
 ('ORDER5'),
 ('ORDER4'),
@@ -169,7 +167,6 @@ insert into fileOrder(orderID) values
 
 -- Inserting data into the 'fileOrderContain' table
 insert into fileOrderContain(book,number,orderID) values -- this will need a trigger check for age appropriate
-('BOOK1',1,'ORDER0'),
 ('BOOK1',1,'ORDER2'),
 ('BOOK5',1,'ORDER2'),
 ('BOOK10',1,'ORDER2'),
@@ -241,7 +238,6 @@ insert into referrerDiscount(discount,numberOfPeople,discountPercent) values
 
 -- Inserting data into the 'eventDiscount' table
 insert into eventDiscount(discount,discountPercent,applyForAll,startDate,endDate) values
-('E_DISCOUNT0',40,true,'  ','2022-12-24'),
 ('E_DISCOUNT1',20,true,'2023-01-01','2023-12-01'),
 ('E_DISCOUNT2',30,false,'2023-01-01','2023-12-01'),
 ('E_DISCOUNT3',30,true,now(),date_add(now(),interval 7 day)),
@@ -262,13 +258,8 @@ insert into eventApply(discount,book) values
 -- Inserting data into the 'rating' table
 insert into rating(book,number,customer,star) values
 ('BOOK1',1,'CUSTOMER1',4),
-('BOOK1',1,'CUSTOMER2',3),
-('BOOK1',1,'CUSTOMER3',5),
-('BOOK3',1,'CUSTOMER1',5),
-('BOOK5',1,'CUSTOMER3',2),
+('BOOK5',1,'CUSTOMER1',5),
 ('BOOK10',1,'CUSTOMER2',3);
-
-
 
 -- Inserting data into the 'comment' table
 insert into comment(book,number,customer) values
